@@ -25,20 +25,22 @@ public class UserDAO {
 
     public DAOResponse<User> createUser(User body)  {
         DAOResponse<User> result = new DAOResponse<>();
-        result.body = null;
+
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         try {
             template.update(con -> {
                 PreparedStatement statement = con.prepareStatement(
-                        "INSERT INTO userpublic(login, password)" + " VALUES(?,?)" ,
+                        "INSERT INTO user(login, password)" + " VALUES(?,?)" ,
                         PreparedStatement.RETURN_GENERATED_KEYS);
                 statement.setString(1, body.getLogin());
                 statement.setString(2, body.getPassword());
                 return statement;
             }, keyHolder);
+            result.body.setId(keyHolder.getKey().intValue());
             result.status = HttpStatus.CREATED;
         }
         catch (DuplicateKeyException e) {
+            result.body = null;
             result.status = HttpStatus.CONFLICT;
         }
         return result;
@@ -48,7 +50,7 @@ public class UserDAO {
         DAOResponse<User> result = new DAOResponse<>();
         try {
             final User user =  template.queryForObject(
-                    "SELECT * FROM userpublic WHERE login = ?::citext",
+                    "SELECT * FROM user WHERE login = ?::citext",
                     new Object[]{nickname},  userMapper);
             result.status = HttpStatus.OK;
             result.body = user;
@@ -61,9 +63,30 @@ public class UserDAO {
 
     }
 
-
+    public DAOResponse<User> addViewedPage(Integer userID, Integer pageID, String pageTitle)  {
+        DAOResponse<User> result = new DAOResponse<>();
+        result.body = null;
+        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+        try {
+            template.update(con -> {
+                PreparedStatement statement = con.prepareStatement(
+                        "INSERT INTO userpages(userid, pageid, title)" + " VALUES(?,?,?)" ,
+                        PreparedStatement.RETURN_GENERATED_KEYS);
+                statement.setInt(1, userID);
+                statement.setInt(2, pageID);
+                statement.setString(3, pageTitle);
+                return statement;
+            }, keyHolder);
+            result.status = HttpStatus.CREATED;
+        }
+        catch (DuplicateKeyException e) {
+            result.status = HttpStatus.CONFLICT;
+        }
+        return result;
+    }
 
     public static final RowMapper<User> userMapper = (res, num) -> {
+        Integer id = res.getInt("id");
         String login = res.getString("login");
         String password = res.getString("password");
         return new User(login, password);

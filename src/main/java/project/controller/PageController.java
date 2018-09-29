@@ -50,7 +50,7 @@ public class PageController {
         if (requestedPage != null) {
             if (requestedPage.isPublic() || requestedPage.getOwnerID() == user.getId()) {
                 if (requestedPage.getOwnerID() != user.getId()) {
-//                    userDAO.addViewedPage(pageID);
+                    userDAO.addViewedPage(user.getId(),pageID,requestedPage.getTitle());
                 }
                 response =  ResponseEntity.status(HttpStatus.OK).body(requestedPage);
             } else {

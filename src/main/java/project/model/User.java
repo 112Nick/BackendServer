@@ -8,7 +8,6 @@ public class User {
     private String login;
     private String password;
     private String confirmPassword;
-    private Integer[] viewedPages;
 
 
     @JsonCreator
@@ -70,13 +69,6 @@ public class User {
         this.confirmPassword = confirmPassword;
     }
 
-    public Integer[] getViewedPages() {
-        return viewedPages;
-    }
-
-    public void setViewedPages(Integer[] viewedPages) {
-        this.viewedPages = viewedPages;
-    }
 }
 
 

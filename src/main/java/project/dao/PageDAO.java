@@ -114,13 +114,49 @@ public class PageDAO {
     }
 
 
-    public DAOResponse<List<PageCut>> getUsersPages(Integer userID) {
+    public DAOResponse<List<PageCut>> getUsersPages(Integer userID, String sort, String own, String search) {
         DAOResponse<List<PageCut>> daoResponse = new DAOResponse<>();
         List<Object> tmpObj = new ArrayList<>();
         tmpObj.add(userID);
+        String sqlQuerry;
+
+        switch(own) {
+            case "me":
+                sqlQuerry = "SELECT id, title from page WHERE ownerID = ?";
+                break;
+            case "others":
+                sqlQuerry = "SELECT pageID as id, title from userPages where userID = ?";
+
+                break;
+            case "all":
+                tmpObj.add(userID);
+                sqlQuerry = "SELECT id, title from page WHERE ownerID = ?" +
+                        "UNION SELECT pageID as id, title from userPages where userID = ?";
+                break;
+            default:
+                tmpObj.add(userID);
+                sqlQuerry = "SELECT id, title from page WHERE ownerID = ?" +
+                        "UNION SELECT pageID as id, title from userPages where userID = ?";
+                break;
+        }
+
+        if (search != null && !search.isEmpty()) {
+            sqlQuerry += "WHERE title LIKE '%?%'";
+            tmpObj.add(search);
+        }
+
+
+        switch (sort) {
+            case "alphabet":
+                sqlQuerry += "ORDER BY title";
+                break;
+            case "date":
+                //TODO
+                break;
+        }
 
         try {
-            final List<PageCut> foundPages =  template.query( "SELECT id, title FROM page WHERE ownerid = ?",
+            final List<PageCut> foundPages =  template.query( sqlQuerry,
                     tmpObj.toArray(), pageСutMapper);
             daoResponse.body = foundPages;
             daoResponse.status = HttpStatus.OK;
@@ -132,7 +168,6 @@ public class PageDAO {
         }
         return daoResponse;
     }
-
 
 
     public static final RowMapper<Page> pageMapper = (res, num) -> {
@@ -149,4 +184,5 @@ public class PageDAO {
         String title = res.getString("title");
         return new PageCut(ID, title);
     };
+
 }
