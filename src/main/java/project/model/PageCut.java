@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class PageCut {
-    private int ID;
+    private String uuid;
     private String title;
 
     public PageCut() {
@@ -13,18 +13,18 @@ public class PageCut {
 
 
     @JsonCreator
-    public PageCut(@JsonProperty("ID") int ID,
+    public PageCut(@JsonProperty("ID") String uuid,
                    @JsonProperty("title") String title) {
-        this.ID = ID;
+        this.uuid = uuid;
         this.title = title;
     }
 
-    public int getID() {
-        return ID;
+    public String getID() {
+        return uuid;
     }
 
-    public void setID(int ID) {
-        this.ID = ID;
+    public void setID(String ID) {
+        this.uuid = uuid;
     }
 
     public String getTitle() {

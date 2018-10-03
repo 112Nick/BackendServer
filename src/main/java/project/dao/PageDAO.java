@@ -29,35 +29,39 @@ public class PageDAO {
     public DAOResponse<Page> createPage(Page body)  {
         DAOResponse<Page> result = new DAOResponse<>();
         result.body = null;
+        System.out.println("2");
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         try {
             template.update(con -> {
                 PreparedStatement statement = con.prepareStatement(
-                        "INSERT INTO page(ownerid, title, ispubluc, fieldsnames, fieldsvalues)" + " VALUES(?, ?, ?, ?, ?)" ,
+                        "INSERT INTO page(uuid, ownerid, title, ispublic, fieldsnames, fieldsvalues)" + " VALUES(?, ?, ?, ?, ?, ?)" ,
                         PreparedStatement.RETURN_GENERATED_KEYS);
-                statement.setInt(1, body.getOwnerID());
-                statement.setString(2, body.getTitle());
-                statement.setBoolean(3, body.isPublic());
-                statement.setArray(4, con.createArrayOf("TEXT", body.getFieldsNames()));
-                statement.setArray(5, con.createArrayOf("TEXT", body.getFieldsValues()));
+                statement.setString(1, body.getUUID());
+                statement.setInt(2, body.getOwnerID());
+                statement.setString(3, body.getTitle());
+                statement.setBoolean(4, body.isPublic());
+                statement.setArray(5, con.createArrayOf("TEXT", body.getFieldsNames()));
+                statement.setArray(6, con.createArrayOf("TEXT", body.getFieldsValues()));
                 return statement;
             }, keyHolder);
             result.status = HttpStatus.CREATED;
             return result;
         }
         catch (DuplicateKeyException e) {
+            System.out.println("3");
+
             result.status = HttpStatus.CONFLICT;
         }
         return result;
 
     }
 
-    public DAOResponse<Page> getPageByID(Integer pageID) {
+    public DAOResponse<Page> getPageByID(String pageUUID) {
         DAOResponse<Page> result = new DAOResponse<>();
         try {
             final Page foundPage =  template.queryForObject(
-                    "SELECT * FROM page WHERE id = ?",
-                    new Object[]{pageID},  pageMapper);
+                    "SELECT * FROM page WHERE uuid = ?",
+                    new Object[]{pageUUID},  pageMapper);
 
             result.body = foundPage;
             result.status = HttpStatus.OK;
@@ -71,7 +75,7 @@ public class PageDAO {
     }
 
 
-    public DAOResponse<Page> editPage(Page body, Integer pageID) {
+    public DAOResponse<Page> editPage(Page body, String pageUUID) {
         DAOResponse<Page> result = new DAOResponse<>();
         result.body = null;
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
@@ -89,7 +93,7 @@ public class PageDAO {
                 statement.setBoolean(2, body.isPublic());
                 statement.setArray(3, con.createArrayOf("TEXT", body.getFieldsNames()));
                 statement.setArray(4, con.createArrayOf("TEXT", body.getFieldsValues()));
-                statement.setInt(5, pageID);
+                statement.setString(5, pageUUID);
                 return statement;
             }, keyHolder);
             result.status = HttpStatus.OK;
@@ -99,11 +103,11 @@ public class PageDAO {
         return result;
     }
 
-    public DAOResponse<Page> deletePage(Integer pageID) {
+    public DAOResponse<Page> deletePage(String pageUUID) {
         DAOResponse<Page> result = new DAOResponse<>();
         try {
                 template.queryForObject(
-                    "DELETE FROM page WHERE id = ?", new Object[]{pageID},  pageMapper);
+                    "DELETE FROM page WHERE uuid = ?", new Object[]{pageUUID},  pageMapper);
                 result.status = HttpStatus.OK;
         }
         catch (DataAccessException e) {
@@ -118,37 +122,40 @@ public class PageDAO {
         DAOResponse<List<PageCut>> daoResponse = new DAOResponse<>();
         List<Object> tmpObj = new ArrayList<>();
         tmpObj.add(userID);
-        String sqlQuerry;
+        String sqlQuery;
+
+        own = "all";
+        sort = "alphabet";
 
         switch(own) {
             case "me":
-                sqlQuerry = "SELECT id, title from page WHERE ownerID = ?";
+                sqlQuery = "SELECT uuid, title FROM page WHERE ownerID = ?";
                 break;
             case "others":
-                sqlQuerry = "SELECT pageID as id, title from userPages where userID = ?";
+                sqlQuery = "SELECT pageUUID AS uuid, title FROM userPages WHERE userID = ?";
 
                 break;
             case "all":
                 tmpObj.add(userID);
-                sqlQuerry = "SELECT id, title from page WHERE ownerID = ?" +
-                        "UNION SELECT pageID as id, title from userPages where userID = ?";
+                sqlQuery = "SELECT uuid, title FROM page WHERE ownerID = ?" +
+                        "UNION SELECT pageUUID as id, title from userPages WHERE userID = ?";
                 break;
             default:
                 tmpObj.add(userID);
-                sqlQuerry = "SELECT id, title from page WHERE ownerID = ?" +
-                        "UNION SELECT pageID as id, title from userPages where userID = ?";
+                sqlQuery = "SELECT uuid, title FROM page WHERE ownerID = ?" +
+                        "UNION SELECT pageUUID as id, title FROM userPages WHERE userID = ?";
                 break;
         }
 
         if (search != null && !search.isEmpty()) {
-            sqlQuerry += "WHERE title LIKE '%?%'";
+            sqlQuery += "WHERE title LIKE '%?%'";
             tmpObj.add(search);
         }
 
 
         switch (sort) {
             case "alphabet":
-                sqlQuerry += "ORDER BY title";
+                sqlQuery += "ORDER BY title";
                 break;
             case "date":
                 //TODO
@@ -156,8 +163,8 @@ public class PageDAO {
         }
 
         try {
-            final List<PageCut> foundPages =  template.query( sqlQuerry,
-                    tmpObj.toArray(), pageСutMapper);
+            final List<PageCut> foundPages =  template.query( sqlQuery,
+                    tmpObj.toArray(), pageCutMapper);
             daoResponse.body = foundPages;
             daoResponse.status = HttpStatus.OK;
         }
@@ -179,10 +186,10 @@ public class PageDAO {
         return new Page(ownerID, title, isPublic, (String[])fieldsNames.getArray(), (String[])fieldsValues.getArray());
     };
 
-    public static final RowMapper<PageCut> pageСutMapper = (res, num) -> {
-        Integer ID = res.getInt("id");
+    public static final RowMapper<PageCut> pageCutMapper = (res, num) -> {
+        String uuid = res.getString("uuid");
         String title = res.getString("title");
-        return new PageCut(ID, title);
+        return new PageCut(uuid, title);
     };
 
 }

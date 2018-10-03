@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 
 public class Page {
-    private int ID;
+    private String uuid;
     private int ownerID;
     private String title;
     private boolean isPublic;
@@ -31,12 +31,12 @@ public class Page {
     }
 
 
-    public int getID() {
-        return ID;
+    public String getUUID() {
+        return uuid;
     }
 
-    public void setID(int ID) {
-        this.ID = ID;
+    public void setUUID(String UUID) {
+        this.uuid = UUID;
     }
 
     public int getOwnerID() {

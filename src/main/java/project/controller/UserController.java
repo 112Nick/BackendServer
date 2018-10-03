@@ -15,12 +15,13 @@ import java.util.List;
 
 @ResponseBody
 @RestController
+@CrossOrigin({"http://127.0.0.1:8000", "*"})
 @RequestMapping("/")
 public class UserController {
 
     private UserDAO userDAO;
     private PageDAO pageDAO;
-    private static final String SESSIONKEY = "SessionKey";
+    private static final String SESSION_KEY = "SessionKey";
 
     public UserController(UserDAO userDAO, PageDAO pageDAO) {
         this.userDAO = userDAO;
@@ -32,18 +33,18 @@ public class UserController {
                                          @RequestParam(value = "sort", required = false) String sort,
                                          @RequestParam(value = "own", required = false) String own,
                                          @RequestParam(value = "search", required = false) String search) {
-        User user = (User) httpSession.getAttribute(SESSIONKEY);
+//        User user = (User) httpSession.getAttribute(SESSION_KEY);
         ResponseEntity response;
-        if (user != null) {
-            DAOResponse<List<PageCut>> daoResponse = pageDAO.getUsersPages(user.getId(), sort, own, search);
+//        if (user != null) {
+            DAOResponse<List<PageCut>> daoResponse = pageDAO.getUsersPages(1, sort, own, search);
             if (daoResponse.status == HttpStatus.NOT_FOUND) {
                 response = ResponseEntity.status(HttpStatus.NOT_FOUND).body("No pages found");
             } else {
                 response =  ResponseEntity.status(HttpStatus.OK).body(daoResponse.body);
             }
-        } else {
-            response = ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User unauthorized");
-        }
+//        } else {
+//            response = ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User unauthorized");
+//        }
         return response;
     }
 
@@ -57,7 +58,7 @@ public class UserController {
             response =  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Password isn't confirmed");
         } else {
             body.setId(daoResponse.body.getId());
-            httpSession.setAttribute(SESSIONKEY, body);
+            httpSession.setAttribute(SESSION_KEY, body);
             response = ResponseEntity.status(HttpStatus.OK).body("Successfully registered");
         }
         return response;
@@ -71,7 +72,7 @@ public class UserController {
         if(daoResponse.status == HttpStatus.NOT_FOUND || !daoResponse.body.getPassword().equals(body.getPassword())) {
             response = ResponseEntity.status(HttpStatus.NOT_FOUND).body("Can't find such user");
         } else {
-            httpSession.setAttribute(SESSIONKEY, daoResponse.body);
+            httpSession.setAttribute(SESSION_KEY, daoResponse.body);
             response = ResponseEntity.status(HttpStatus.OK).body("Successfully logged in");
         }
         return response;
@@ -80,7 +81,7 @@ public class UserController {
     @RequestMapping(path = "/logout", method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<?> logoutUser(HttpSession httpSession) {
         ResponseEntity response;
-        if (httpSession.getAttribute(SESSIONKEY) != null) {
+        if (httpSession.getAttribute(SESSION_KEY) != null) {
             httpSession.invalidate();
             response = ResponseEntity.status(HttpStatus.OK).body("Successful logout");
         } else {

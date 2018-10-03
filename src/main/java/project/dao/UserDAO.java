@@ -70,7 +70,7 @@ public class UserDAO {
         try {
             template.update(con -> {
                 PreparedStatement statement = con.prepareStatement(
-                        "INSERT INTO userpages(userid, pageid, title)" + " VALUES(?,?,?)" ,
+                        "INSERT INTO userpages(userid, pageuuid, title)" + " VALUES(?,?,?)" ,
                         PreparedStatement.RETURN_GENERATED_KEYS);
                 statement.setInt(1, userID);
                 statement.setInt(2, pageID);
