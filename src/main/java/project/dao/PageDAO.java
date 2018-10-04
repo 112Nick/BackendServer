@@ -83,10 +83,10 @@ public class PageDAO {
             template.update(con -> {
                 PreparedStatement statement = con.prepareStatement(
                         "UPDATE page SET " +
-                                " title = COALESCE (?, title)," +
-                                " ispublic = COALESCE(?, ispublic) " +
-                                " fieldsnames = COALESCE(?, fieldsnames) " +
-                                " fieldsvalues = COALESCE(?, fieldsvalues) " +
+                                " title = ?," +
+                                " ispublic = ?, " +
+                                " fieldsnames = ?, " +
+                                " fieldsvalues = ? " +
                                 "WHERE uuid = ?",
                         PreparedStatement.RETURN_GENERATED_KEYS);
                 statement.setString(1 , body.getTitle());
