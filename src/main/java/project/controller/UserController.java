@@ -90,4 +90,19 @@ public class UserController {
         return response;
 
     }
+
+    @RequestMapping(path = "/dropdb", method = RequestMethod.GET, produces = "application/json")
+    public ResponseEntity<?> clearTables(HttpSession httpSession) {
+        ResponseEntity response;
+        pageDAO.dropTables();
+
+//        if (httpSession.getAttribute(SESSION_KEY) != null) {
+//            httpSession.invalidate();
+            response = ResponseEntity.status(HttpStatus.OK).body("Successful droped");
+//        } else {
+//            response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Unsuccessful logout");
+//        }
+        return response;
+
+    }
 }

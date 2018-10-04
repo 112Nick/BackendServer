@@ -176,6 +176,12 @@ public class PageDAO {
         return daoResponse;
     }
 
+    public void dropTables() {
+        template.update(
+                "TRUNCATE page, userpages CASCADE;" //TODO only users when connected
+        );
+    }
+
 
     public static final RowMapper<Page> pageMapper = (res, num) -> {
         Integer ownerID = res.getInt("ownerid");
