@@ -11,6 +11,9 @@ public class Page {
     private boolean isPublic;
     private String[] fieldsNames;
     private String[] fieldsValues;
+    private String date;
+    private String time;
+
 
     public Page() {
         this.title = "JustCreated";
@@ -22,14 +25,34 @@ public class Page {
                  @JsonProperty("title") String title,
                  @JsonProperty("isPublic") boolean isPublic,
                  @JsonProperty("fieldsNames") String[] fieldsNames,
-                 @JsonProperty("fieldsValues") String[] fieldsValues) {
+                 @JsonProperty("fieldsValues") String[] fieldsValues,
+                 @JsonProperty("date") String date,
+                 @JsonProperty("time") String time) {
         this.ownerID = ownerID;
         this.title = title;
         this.isPublic = isPublic;
         this.fieldsNames = fieldsNames;
         this.fieldsValues = fieldsValues;
+        this.date = date;
+        this.time = time;
     }
 
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
 
     public String getUUID() {
         return uuid;

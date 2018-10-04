@@ -8,9 +8,9 @@ import project.dao.PageDAO;
 import project.dao.UserDAO;
 import project.model.Page;
 import project.model.DAOResponse;
-import project.model.User;
 
 import javax.servlet.http.HttpSession;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @ResponseBody
@@ -36,7 +36,11 @@ public class PageController {
         System.out.println("1");
         UUID uuid = UUID.randomUUID();
         body.setUUID(uuid.toString());
-        body.setOwnerID(1);
+        String date = LocalDateTime.now().toString().substring(0,10);
+        String time = LocalDateTime.now().toString().substring(11,19);
+        body.setDate(date);
+        body.setTime(time);
+        body.setOwnerID(1); //TODO DELETE
         ResponseEntity response;
         DAOResponse<Page> daoResponse = pageDAO.createPage(body);
         if (daoResponse.status == HttpStatus.CREATED) {

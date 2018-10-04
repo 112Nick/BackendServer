@@ -12,13 +12,17 @@ CREATE TABLE IF NOT EXISTS page (
   title TEXT,
   isPublic BOOLEAN,
   fieldsNames TEXT[],
-  fieldsValues TEXT[]
+  fieldsValues TEXT[],
+  date TEXT,
+  time TEXT
 );
 
 CREATE TABLE IF NOT EXISTS userPages (
   userID INTEGER,
   pageUUID TEXT,
   title TEXT,
+  date TEXT,
+  time TEXT,
   UNIQUE (userID, pageUUID)
 );
 

@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.time.LocalDateTime;
+import java.util.Calendar;
 import java.util.List;
 
 @ResponseBody
@@ -35,6 +37,7 @@ public class UserController {
                                          @RequestParam(value = "search", required = false) String search) {
 //        User user = (User) httpSession.getAttribute(SESSION_KEY);
         ResponseEntity response;
+        System.out.println(LocalDateTime.now().toString());
 //        if (user != null) {
             DAOResponse<List<PageCut>> daoResponse = pageDAO.getUsersPages(1, sort, own, search);
             if (daoResponse.status == HttpStatus.NOT_FOUND) {

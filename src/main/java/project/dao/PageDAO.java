@@ -13,6 +13,7 @@ import project.model.DAOResponse;
 
 import java.sql.Array;
 import java.sql.PreparedStatement;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +35,7 @@ public class PageDAO {
         try {
             template.update(con -> {
                 PreparedStatement statement = con.prepareStatement(
-                        "INSERT INTO page(uuid, ownerid, title, ispublic, fieldsnames, fieldsvalues)" + " VALUES(?, ?, ?, ?, ?, ?)" ,
+                        "INSERT INTO page(uuid, ownerid, title, ispublic, fieldsnames, fieldsvalues, date, time)" + " VALUES(?, ?, ?, ?, ?, ?, ?, ?)" ,
                         PreparedStatement.RETURN_GENERATED_KEYS);
                 statement.setString(1, body.getUUID());
                 statement.setInt(2, body.getOwnerID());
@@ -42,6 +43,9 @@ public class PageDAO {
                 statement.setBoolean(4, body.isPublic());
                 statement.setArray(5, con.createArrayOf("TEXT", body.getFieldsNames()));
                 statement.setArray(6, con.createArrayOf("TEXT", body.getFieldsValues()));
+                statement.setString(7, body.getDate());
+                statement.setString(8, body.getTime());
+
                 return statement;
             }, keyHolder);
             result.status = HttpStatus.CREATED;
@@ -129,21 +133,21 @@ public class PageDAO {
 
         switch(own) {
             case "me":
-                sqlQuery = "SELECT uuid, title FROM page WHERE ownerID = ?";
+                sqlQuery = "SELECT uuid, title, date, time FROM page WHERE ownerID = ?";
                 break;
             case "others":
-                sqlQuery = "SELECT pageUUID AS uuid, title FROM userPages WHERE userID = ?";
+                sqlQuery = "SELECT pageUUID AS uuid, title, date, time FROM userPages WHERE userID = ?";
 
                 break;
             case "all":
                 tmpObj.add(userID);
-                sqlQuery = "SELECT uuid, title FROM page WHERE ownerID = ?" +
-                        "UNION SELECT pageUUID as id, title from userPages WHERE userID = ?";
+                sqlQuery = "SELECT uuid, title, date, time FROM page WHERE ownerID = ?" +
+                        "UNION SELECT pageUUID as id, title, date, time from userPages WHERE userID = ?";
                 break;
             default:
                 tmpObj.add(userID);
-                sqlQuery = "SELECT uuid, title FROM page WHERE ownerID = ?" +
-                        "UNION SELECT pageUUID as id, title FROM userPages WHERE userID = ?";
+                sqlQuery = "SELECT uuid, title,  date, time FROM page WHERE ownerID = ?" +
+                        "UNION SELECT pageUUID as id, title, date, time FROM userPages WHERE userID = ?";
                 break;
         }
 
@@ -165,6 +169,15 @@ public class PageDAO {
         try {
             final List<PageCut> foundPages =  template.query( sqlQuery,
                     tmpObj.toArray(), pageCutMapper);
+            String curDate = LocalDateTime.now().toString().substring(0,10);
+            for (int i = 0; i < foundPages.size(); i++) {
+                PageCut key = foundPages.get(i);
+                if (key.getDate().equals(curDate)) {
+                    key.setDate("");
+                } else {
+                    key.setTime("");
+                }
+            }
             daoResponse.body = foundPages;
             daoResponse.status = HttpStatus.OK;
         }
@@ -189,13 +202,19 @@ public class PageDAO {
         Boolean isPublic = res.getBoolean("ispublic");
         Array fieldsNames = res.getArray("fieldsnames");
         Array fieldsValues = res.getArray("fieldsvalues");
-        return new Page(ownerID, title, isPublic, (String[])fieldsNames.getArray(), (String[])fieldsValues.getArray());
+        String date = res.getString("date");
+        String time = res.getString("time");
+
+        return new Page(ownerID, title, isPublic, (String[])fieldsNames.getArray(), (String[])fieldsValues.getArray(), date, time);
     };
 
     public static final RowMapper<PageCut> pageCutMapper = (res, num) -> {
         String uuid = res.getString("uuid");
         String title = res.getString("title");
-        return new PageCut(uuid, title);
+        String date = res.getString("date");
+        String time = res.getString("time");
+
+        return new PageCut(uuid, title, date, time);
     };
 
 }
