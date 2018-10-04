@@ -87,7 +87,7 @@ public class PageDAO {
                                 " ispublic = COALESCE(?, ispublic) " +
                                 " fieldsnames = COALESCE(?, fieldsnames) " +
                                 " fieldsvalues = COALESCE(?, fieldsvalues) " +
-                                "WHERE id = ?",
+                                "WHERE uuid = ?",
                         PreparedStatement.RETURN_GENERATED_KEYS);
                 statement.setString(1 , body.getTitle());
                 statement.setBoolean(2, body.isPublic());
