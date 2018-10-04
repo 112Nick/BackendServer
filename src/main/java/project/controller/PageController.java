@@ -40,7 +40,7 @@ public class PageController {
         ResponseEntity response;
         DAOResponse<Page> daoResponse = pageDAO.createPage(body);
         if (daoResponse.status == HttpStatus.CREATED) {
-            response = ResponseEntity.status(HttpStatus.CREATED).body(body.getUUID());
+            response = ResponseEntity.status(HttpStatus.CREATED).body(body);
         } else {
             response = ResponseEntity.status(HttpStatus.FORBIDDEN).body("Something went wrong");
         }
