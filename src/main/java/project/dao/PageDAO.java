@@ -175,15 +175,15 @@ public class PageDAO {
         try {
             final List<PageCut> foundPages =  template.query( sqlQuery,
                     tmpObj.toArray(), pageCutMapper);
-            String curDate = LocalDateTime.now().toString().substring(0,10);
-            for (int i = 0; i < foundPages.size(); i++) {
-                PageCut key = foundPages.get(i);
-                if (key.getDate().equals(curDate)) {
-                    key.setDate("");
-                } else {
-                    key.setTime("");
-                }
-            }
+//            String curDate = LocalDateTime.now().toString().substring(0,10);
+//            for (int i = 0; i < foundPages.size(); i++) {
+//                PageCut key = foundPages.get(i);
+//                if (key.getDate().equals(curDate)) {
+//                    key.setDate("");
+//                } else {
+//                    key.setTime("");
+//                }
+//            }
             daoResponse.body = foundPages;
             daoResponse.status = HttpStatus.OK;
         }

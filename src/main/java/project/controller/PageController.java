@@ -10,6 +10,8 @@ import project.model.Page;
 import project.model.DAOResponse;
 
 import javax.servlet.http.HttpSession;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -36,10 +38,14 @@ public class PageController {
         System.out.println("1");
         UUID uuid = UUID.randomUUID();
         body.setUUID(uuid.toString());
-        String date = LocalDateTime.now().toString().substring(0,10);
-        String time = LocalDateTime.now().toString().substring(11,19);
-        body.setDate(date);
-        body.setTime(time);
+//        String date = LocalDateTime.now().toString().substring(0,10);
+//        String time = LocalDateTime.now().toString().substring(11,19);
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        Instant instant = timestamp.toInstant();
+        System.out.println(instant);
+//        System.out.println(LocalDateTime.now() - LocalDateTime.now());
+        body.setDate(instant.toString());
+        body.setTime(instant.toString());
         body.setOwnerID(1); //TODO DELETE
         ResponseEntity response;
         DAOResponse<Page> daoResponse = pageDAO.createPage(body);
