@@ -106,22 +106,21 @@ public class PageController {
     }
 
     @RequestMapping(path = "/{id}/delete", method = RequestMethod.DELETE, produces = "application/json")
-    public ResponseEntity<?> deleteуPage(@PathVariable("id") String pageUUID, HttpSession httpSession) {
+    public ResponseEntity<?> deletePage(@PathVariable("id") String pageUUID, HttpSession httpSession) {
 //        User user = (User) httpSession.getAttribute(SESSION_KEY);
         ResponseEntity response;
         DAOResponse<Page> daoResponse = pageDAO.getPageByID(pageUUID);
         Page requestedPage = daoResponse.body;
 //        if (requestedPage != null && requestedPage.getOwnerID() == user.getId()) {
-        if (requestedPage != null) {
-            daoResponse = pageDAO.deletePage(pageUUID);
-            if (daoResponse.status == HttpStatus.OK) {
-                response = ResponseEntity.status(HttpStatus.OK).body("Successfully edited");
-
-            } else {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).body("Page not found");
-            }
+        if (requestedPage == null) {
+            response = ResponseEntity.status(HttpStatus.NOT_FOUND).body("Page not found");
         } else {
-            response = ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden");
+//        if (requestedPage != null && requestedPage.getOwnerID() != user.getId()) {
+//            response = ResponseEntity.status(HttpStatus.FORBIDDEN).body("Forbidden");
+//        } else {
+            daoResponse = pageDAO.deletePage(pageUUID);
+            response = ResponseEntity.status(HttpStatus.OK).body("Successfully deleted");
+//        }
         }
         return response;
     }

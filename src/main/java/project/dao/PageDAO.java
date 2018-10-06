@@ -109,12 +109,18 @@ public class PageDAO {
 
     public DAOResponse<Page> deletePage(String pageUUID) {
         DAOResponse<Page> result = new DAOResponse<>();
+        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         try {
-                template.queryForObject(
-                    "DELETE FROM page WHERE uuid = ?", new Object[]{pageUUID},  pageMapper);
-                result.status = HttpStatus.OK;
+            template.update(con -> {
+                    PreparedStatement statement = con.prepareStatement(
+                            "DELETE FROM page WHERE uuid = ?",
+                            PreparedStatement.RETURN_GENERATED_KEYS);
+                    statement.setString(1 , pageUUID);
+                    return statement;
+                    }, keyHolder);
+            result.status = HttpStatus.OK;
         }
-        catch (DataAccessException e) {
+        catch (Exception e) {
             result.status = HttpStatus.NOT_FOUND;
         }
         return result;
@@ -197,6 +203,7 @@ public class PageDAO {
 
 
     public static final RowMapper<Page> pageMapper = (res, num) -> {
+        String uuid = res.getString("uuid");
         Integer ownerID = res.getInt("ownerid");
         String title = res.getString("title");
         Boolean isPublic = res.getBoolean("ispublic");
