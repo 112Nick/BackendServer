@@ -1,8 +1,6 @@
 package project.controller;
 
 
-import javafx.util.Pair;
-import org.omg.CORBA.NameValuePair;
 import project.dao.PageDAO;
 import project.dao.UserDAO;
 import project.model.PageCut;
@@ -12,15 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.net.ssl.HttpsURLConnection;
 import javax.servlet.http.HttpSession;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @ResponseBody
