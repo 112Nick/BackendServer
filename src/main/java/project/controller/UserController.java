@@ -1,6 +1,8 @@
 package project.controller;
 
 
+import javafx.util.Pair;
+import org.omg.CORBA.NameValuePair;
 import project.dao.PageDAO;
 import project.dao.UserDAO;
 import project.model.PageCut;
@@ -10,9 +12,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.net.ssl.HttpsURLConnection;
 import javax.servlet.http.HttpSession;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.time.LocalDateTime;
-import java.util.Calendar;
+import java.util.ArrayList;
 import java.util.List;
 
 @ResponseBody
@@ -68,18 +76,47 @@ public class UserController {
 
     }
 
-    @RequestMapping(path = "/login", method = RequestMethod.POST, produces = "application/json")
-    public ResponseEntity<?> loginUser(@RequestBody User body, HttpSession httpSession) {
-        DAOResponse<User> daoResponse = userDAO.getUserByNickname(body.getLogin());
-        ResponseEntity response;
-        if(daoResponse.status == HttpStatus.NOT_FOUND || !daoResponse.body.getPassword().equals(body.getPassword())) {
-            response = ResponseEntity.status(HttpStatus.NOT_FOUND).body("Can't find such user");
-        } else {
-            httpSession.setAttribute(SESSION_KEY, daoResponse.body);
-            response = ResponseEntity.status(HttpStatus.OK).body("Successfully logged in");
-        }
-        return response;
-    }
+
+//    @RequestMapping(path = "/login/yandex/{code}", method = RequestMethod.GET, produces = "application/json")
+//    public void loginUser(@PathVariable("code") String code, HttpSession httpSession) {
+//        DAOResponse<User> daoResponse = userDAO.getUserByNickname(body.getLogin());
+//        ResponseEntity response;
+//        if(daoResponse.status == HttpStatus.NOT_FOUND || !daoResponse.body.getPassword().equals(body.getPassword())) {
+//            response = ResponseEntity.status(HttpStatus.NOT_FOUND).body("Can't find such user");
+//        } else {
+//            httpSession.setAttribute(SESSION_KEY, daoResponse.body);
+//            response = ResponseEntity.status(HttpStatus.OK).body("Successfully logged in");
+//        }
+//        return response;
+//        try{
+//            sendPost(code);
+//            URL url = new URL("https://velox-server.herokuapp.com/qr/create");
+//            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+//            con.setRequestMethod("POST");
+//            con.setRequestProperty("Content-Type", "application/json");
+//            int status = con.getResponseCode();
+//            List<Pair<String,String>> params = new ArrayList<>();
+//            params.add(new Pair<>("title", "xxx"));
+
+//            BufferedReader in = new BufferedReader(
+//                    new InputStreamReader(con.getInputStream()));
+//            String inputLine;
+//            StringBuilder content = new StringBuilder();
+//            while ((inputLine = in.readLine()) != null) {
+//                content.append(inputLine);
+//            }
+//
+//            in.close();
+//            con.disconnect();
+//            System.out.println(status);
+//            System.out.println(content.toString());
+
+//        }catch (Exception e) {
+//            e.printStackTrace();
+//        }
+
+
+//    }
 
     @RequestMapping(path = "/logout", method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<?> logoutUser(HttpSession httpSession) {
@@ -108,4 +145,47 @@ public class UserController {
         return response;
 
     }
+
+
+//    private void sendPost(String code) throws Exception {
+//
+//
+////        String url = "https://example.com";
+////        URL obj = new URL(url);
+//        URL url = new URL("https://oauth.yandex.ru/token");
+//
+//        HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
+//
+//        con.setRequestMethod("POST");
+////        con.setRequestProperty("User-Agent", USER_AGENT);
+//        con.setRequestProperty("Content-Type", "application/json");
+//
+////        con.setRequestProperty("Accept-Language", "UTF-8");
+//
+//        con.setDoOutput(true);
+//
+//        String params = "{\"qwe\":\"xxx\"}";
+//        System.out.println(params);
+//        OutputStreamWriter outputStreamWriter = new OutputStreamWriter(con.getOutputStream());
+//        outputStreamWriter.write(params);
+//        outputStreamWriter.flush();
+//
+//        int responseCode = con.getResponseCode();
+//        System.out.println("\nSending 'POST' request to URL : " + url);
+////        System.out.println("Post parameters : " + urlParameters);
+//        System.out.println("Response Code : " + responseCode);
+//
+//        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+//        String inputLine;
+//        StringBuffer response = new StringBuffer();
+//
+//        while ((inputLine = in.readLine()) != null) {
+//            response.append(inputLine);
+//        }
+//        in.close();
+//
+//        System.out.println(response.toString());
+//
+//    }
+
 }

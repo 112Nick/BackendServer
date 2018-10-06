@@ -84,7 +84,7 @@ public class PageController {
     }
 
 
-    @RequestMapping(path = "/{id}/edit", method = RequestMethod.POST, produces = "application/json")
+    @RequestMapping(path = "/{id}/edit", method = RequestMethod.DELETE, produces = "application/json")
     public ResponseEntity<?> editPagePost(@RequestBody Page body, @PathVariable("id") String pageUUID, HttpSession httpSession) {
 //        User user = (User) httpSession.getAttribute(SESSION_KEY);
         ResponseEntity response;
