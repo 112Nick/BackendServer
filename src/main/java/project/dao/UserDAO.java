@@ -24,20 +24,46 @@ public class UserDAO {
 
 
     public DAOResponse<User> createUser(User body)  {
-        DAOResponse<User> result = new DAOResponse<>();
+        DAOResponse<User> result = new DAOResponse<>(new User(), HttpStatus.CREATED);
 
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         try {
             template.update(con -> {
                 PreparedStatement statement = con.prepareStatement(
-                        "INSERT INTO user(login, email, token)" + " VALUES(?, ?, ?)" ,
+                        "INSERT INTO \"user\"(login, email, token)" + " VALUES(?, ?, ?) returning id;" ,
                         PreparedStatement.RETURN_GENERATED_KEYS);
                 statement.setString(1, body.getLogin());
                 statement.setString(2, body.getDefaultEmail());
                 statement.setString(3, body.getToken());
                 return statement;
             }, keyHolder);
+
+//            User user = null;
+//            try {
+//                 user =  template.queryForObject(
+//                    "SELECT * FROM user WHERE login = ?",
+//                    new Object[]{body.getLogin()},  userMapper);
+//            } catch (DataAccessException e) {
+//                result.status = HttpStatus.NOT_FOUND;
+//            }
+
             result.body.setId(keyHolder.getKey().intValue());
+//            if (result == null) {
+//                System.out.println("result");
+//            } else {
+//                if (result.body == null) {
+//                    System.out.println("result.body");
+//                } else {
+////                    if (user == null) {
+////                        System.out.println("user");
+////                    } else  {
+////                        if (user.getId() == null) {
+////                            System.out.println("user");
+//                        }
+//                    }
+//                }
+//            }
+//            result.body.setId(user.getId());
             result.status = HttpStatus.CREATED;
         }
         catch (DuplicateKeyException e) {
@@ -92,6 +118,6 @@ public class UserDAO {
         String login = res.getString("login");
         String email = res.getString("email");
         String token = res.getString("token");
-        return new User(login, email, token);
+        return new User(id, login, email, token);
     };
 }

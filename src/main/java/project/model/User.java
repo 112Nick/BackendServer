@@ -12,10 +12,12 @@ public class User {
 
     @JsonCreator
     public User(
+            @JsonProperty("id") Integer id,
             @JsonProperty("login") String login,
             @JsonProperty("default_email") String defaultEmail,
             @JsonProperty("token") String token
     ) {
+        this.id = id;
         this.login = login;
         this.defaultEmail = defaultEmail;
         this.token = token;
@@ -28,12 +30,10 @@ public class User {
         this.login = "created";
         this.defaultEmail = "created";
         this.token = "created";
-
-
     }
 
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
