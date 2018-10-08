@@ -30,10 +30,11 @@ public class UserDAO {
         try {
             template.update(con -> {
                 PreparedStatement statement = con.prepareStatement(
-                        "INSERT INTO user(login, password)" + " VALUES(?,?)" ,
+                        "INSERT INTO user(login, email, token)" + " VALUES(?, ?, ?)" ,
                         PreparedStatement.RETURN_GENERATED_KEYS);
                 statement.setString(1, body.getLogin());
-                statement.setString(2, body.getPassword());
+                statement.setString(2, body.getDefaultEmail());
+                statement.setString(2, body.getToken());
                 return statement;
             }, keyHolder);
             result.body.setId(keyHolder.getKey().intValue());
@@ -46,35 +47,36 @@ public class UserDAO {
         return result;
     }
 
-    public DAOResponse<User> getUserByNickname(String nickname)  {
-        DAOResponse<User> result = new DAOResponse<>();
-        try {
-            final User user =  template.queryForObject(
-                    "SELECT * FROM user WHERE login = ?::citext",
-                    new Object[]{nickname},  userMapper);
-            result.status = HttpStatus.OK;
-            result.body = user;
-        }
-        catch (DataAccessException e) {
-            result.status = HttpStatus.NOT_FOUND;
-            result.body = null;
-        }
-        return result;
+//    public DAOResponse<User> getUserByNickname(String nickname)  {
+//        DAOResponse<User> result = new DAOResponse<>();
+//        try {
+//            final User user =  template.queryForObject(
+//                    "SELECT * FROM user WHERE login = ?::citext",
+//                    new Object[]{nickname},  userMapper);
+//            result.status = HttpStatus.OK;
+//            result.body = user;
+//        }
+//        catch (DataAccessException e) {
+//            result.status = HttpStatus.NOT_FOUND;
+//            result.body = null;
+//        }
+//        return result;
+//
+//    }
 
-    }
-
-    public DAOResponse<User> addViewedPage(Integer userID, Integer pageID, String pageTitle)  {
+    public DAOResponse<User> addViewedPage(Integer userID, String pageID, String pageTitle, String date)  {
         DAOResponse<User> result = new DAOResponse<>();
         result.body = null;
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         try {
             template.update(con -> {
                 PreparedStatement statement = con.prepareStatement(
-                        "INSERT INTO userpages(userid, pageuuid, title)" + " VALUES(?,?,?)" ,
+                        "INSERT INTO userpages(userid, pageuuid, title, date)" + " VALUES(?, ?, ?, ?)" ,
                         PreparedStatement.RETURN_GENERATED_KEYS);
                 statement.setInt(1, userID);
-                statement.setInt(2, pageID);
+                statement.setString(2, pageID);
                 statement.setString(3, pageTitle);
+                statement.setString(3, date);
                 return statement;
             }, keyHolder);
             result.status = HttpStatus.CREATED;
@@ -88,7 +90,8 @@ public class UserDAO {
     public static final RowMapper<User> userMapper = (res, num) -> {
         Integer id = res.getInt("id");
         String login = res.getString("login");
-        String password = res.getString("password");
-        return new User(login, password);
+        String email = res.getString("email");
+        String token = res.getString("token");
+        return new User(login, email, token);
     };
 }

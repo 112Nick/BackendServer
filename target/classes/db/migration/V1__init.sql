@@ -2,8 +2,10 @@ CREATE EXTENSION IF NOT EXISTS CITEXT;
 
 CREATE TABLE "user" (
   id SERIAL PRIMARY KEY,
-  login CITEXT UNIQUE NOT NULL,
-  password CITEXT NOT NULL
+  login TEXT,
+  email TEXT,
+  token CITEXT
+
 );
 
 CREATE TABLE IF NOT EXISTS page (
@@ -13,8 +15,7 @@ CREATE TABLE IF NOT EXISTS page (
   isPublic BOOLEAN,
   fieldsNames TEXT[],
   fieldsValues TEXT[],
-  date TEXT,
-  time TEXT
+  date TEXT
 );
 
 CREATE TABLE IF NOT EXISTS userPages (
@@ -22,7 +23,6 @@ CREATE TABLE IF NOT EXISTS userPages (
   pageUUID TEXT,
   title TEXT,
   date TEXT,
-  time TEXT,
   UNIQUE (userID, pageUUID)
 );
 

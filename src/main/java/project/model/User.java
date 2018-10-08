@@ -6,36 +6,32 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class User {
     private  int id;
     private String login;
-    private String password;
-    private String confirmPassword;
+    private String defaultEmail;
+    private String token;
 
 
     @JsonCreator
     public User(
             @JsonProperty("login") String login,
-            @JsonProperty("password") String password,
-            @JsonProperty("confirmPassword") String confirmPassword
+            @JsonProperty("default_email") String defaultEmail,
+            @JsonProperty("token") String token
     ) {
         this.login = login;
-        this.password = password;
-        this.confirmPassword = confirmPassword;
+        this.defaultEmail = defaultEmail;
+        this.token = token;
     }
 
-    @JsonCreator
-    public User(
-            @JsonProperty("login") String login,
-            @JsonProperty("password") String password
-    ) {
-        this.login = login;
-        this.password = password;
-    }
+
 
     public User() {
         this.id = 0;
         this.login = "created";
-        this.password = "created";
+        this.defaultEmail = "created";
+        this.token = "created";
+
 
     }
+
 
     public int getId() {
         return id;
@@ -53,22 +49,21 @@ public class User {
         this.login = login;
     }
 
-    public String getPassword() {
-        return password;
+    public String getDefaultEmail() {
+        return defaultEmail;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setDefaultEmail(String defaultEmail) {
+        this.defaultEmail = defaultEmail;
     }
 
-    public String getConfirmPassword() {
-        return confirmPassword;
+    public String getToken() {
+        return token;
     }
 
-    public void setConfirmPassword(String confirmPassword) {
-        this.confirmPassword = confirmPassword;
+    public void setToken(String token) {
+        this.token = token;
     }
-
 }
 
 
