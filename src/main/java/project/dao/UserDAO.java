@@ -76,7 +76,7 @@ public class UserDAO {
                 statement.setInt(1, userID);
                 statement.setString(2, pageID);
                 statement.setString(3, pageTitle);
-                statement.setString(3, date);
+                statement.setString(4, date);
                 return statement;
             }, keyHolder);
             result.status = HttpStatus.CREATED;
