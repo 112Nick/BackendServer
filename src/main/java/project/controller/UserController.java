@@ -101,14 +101,14 @@ public class UserController {
                 }
 
             } else {
-                response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Try another service to login");
+                response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Try another service to login 1");
             }
 
             con.disconnect();
 
         }catch (Exception e) {
             e.printStackTrace();
-            response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Try another service to login");
+            response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Try another service to login 2");
         }
         return response;
 
