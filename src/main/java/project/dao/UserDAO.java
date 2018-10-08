@@ -34,7 +34,7 @@ public class UserDAO {
                         PreparedStatement.RETURN_GENERATED_KEYS);
                 statement.setString(1, body.getLogin());
                 statement.setString(2, body.getDefaultEmail());
-                statement.setString(2, body.getToken());
+                statement.setString(3, body.getToken());
                 return statement;
             }, keyHolder);
             result.body.setId(keyHolder.getKey().intValue());

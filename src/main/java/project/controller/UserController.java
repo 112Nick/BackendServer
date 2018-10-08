@@ -76,7 +76,7 @@ public class UserController {
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             con.setRequestProperty("Content-Type", "application/json");
-            con.setRequestProperty("Authorization", "OAuth" + token.getToken());
+            con.setRequestProperty("Authorization", "OAuth " + token.getToken());
             Integer status = con.getResponseCode();
             if (status == 200) {
                 BufferedReader in = new BufferedReader(
@@ -106,7 +106,7 @@ public class UserController {
 
             con.disconnect();
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Try another service to login 2");
         }
