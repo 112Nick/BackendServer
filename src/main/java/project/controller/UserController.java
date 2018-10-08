@@ -68,7 +68,7 @@ public class UserController {
 
 
 
-    @RequestMapping(path = "/login/yandex/", method = RequestMethod.POST, produces = "application/json")
+    @RequestMapping(path = "/login/yandex", method = RequestMethod.POST, produces = "application/json")
     public ResponseEntity<?> loginUser(@RequestBody Token token, HttpSession httpSession) {
         ResponseEntity response;
         try{
