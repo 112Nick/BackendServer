@@ -3,7 +3,7 @@ CREATE EXTENSION IF NOT EXISTS CITEXT;
 CREATE TABLE "user" (
   id SERIAL PRIMARY KEY,
   login TEXT,
-  email TEXT,
+  email TEXT UNIQUE,
   token CITEXT
 
 );
