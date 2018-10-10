@@ -90,6 +90,25 @@ public class UserDAO {
 //
 //    }
 
+
+    public DAOResponse<Integer> getUserID(String email) {
+        DAOResponse<Integer> result = new DAOResponse<>();
+        try {
+            final User user =  template.queryForObject(
+                    "SELECT * FROM user WHERE email = ?",
+                    new Object[]{email},  userMapper);
+
+            result.body = user.getId();
+            result.status = HttpStatus.OK;
+        }
+        catch (DataAccessException e) {
+            result.body = null;
+            result.status = HttpStatus.NOT_FOUND;
+        }
+        return result;
+
+    }
+
     public DAOResponse<User> addViewedPage(Integer userID, String pageID, String pageTitle, String date)  {
         DAOResponse<User> result = new DAOResponse<>();
         result.body = null;

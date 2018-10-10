@@ -94,6 +94,8 @@ public class UserController {
                 DAOResponse<User> daoResponse = userDAO.createUser(user);
                 if (daoResponse.status == HttpStatus.CONFLICT) {
                     response =  ResponseEntity.status(HttpStatus.CONFLICT).body("User exists");
+                    DAOResponse<Integer> daoResponse1 = userDAO.getUserID(user.getDefaultEmail());
+                    user.setId(daoResponse1.body);
                     httpSession.setAttribute(SESSION_KEY, user);
                 } else {
                     user.setId(daoResponse.body.getId());
