@@ -35,19 +35,23 @@ public class PageController {
     @RequestMapping(path = "/create", method = RequestMethod.POST, produces = APPLICATION_JSON)
     public ResponseEntity<?> createPage(@RequestBody Page body, HttpSession httpSession) {
         User user = (User) httpSession.getAttribute(SESSION_KEY);
-        body.setOwnerID(user.getId()); //NullPointer
-        UUID uuid = UUID.randomUUID();
-        body.setUUID(uuid.toString());
-        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        Instant instant = timestamp.toInstant();
-        body.setDate(instant.toString());
-        body.setOwnerID(user.getId());
         ResponseEntity response;
-        DAOResponse<Page> daoResponse = pageDAO.createPage(body);
-        if (daoResponse.status == HttpStatus.CREATED) {
-            response = ResponseEntity.status(HttpStatus.CREATED).body(body);
+        if (user == null) {
+            response = ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("123");
         } else {
-            response = ResponseEntity.status(HttpStatus.FORBIDDEN).body("Something went wrong");
+            body.setOwnerID(user.getId()); //NullPointer
+            UUID uuid = UUID.randomUUID();
+            body.setUUID(uuid.toString());
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            Instant instant = timestamp.toInstant();
+            body.setDate(instant.toString());
+            body.setOwnerID(user.getId());
+            DAOResponse<Page> daoResponse = pageDAO.createPage(body);
+            if (daoResponse.status == HttpStatus.CREATED) {
+                response = ResponseEntity.status(HttpStatus.CREATED).body(body);
+            } else {
+                response = ResponseEntity.status(HttpStatus.FORBIDDEN).body("Something went wrong");
+            }
         }
         return response;
     }
@@ -55,6 +59,9 @@ public class PageController {
     @RequestMapping(path = "/{id}", method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<?> getPage(@PathVariable("id") String pageUUID, HttpSession httpSession) {
         User user = (User) httpSession.getAttribute(SESSION_KEY);
+        if (user == null) {
+            user = new User();
+        }
         ResponseEntity response;
         DAOResponse<Page> daoResponse = pageDAO.getPageByID(pageUUID);
         Page requestedPage = daoResponse.body;
@@ -84,20 +91,24 @@ public class PageController {
         System.out.println("edit");
         DAOResponse<Page> daoResponse = pageDAO.getPageByID(pageUUID);
         Page requestedPage = daoResponse.body;
-        if (requestedPage != null) {
-            if (requestedPage.getOwnerID() == user.getId()) {
-                daoResponse = pageDAO.editPage(body, pageUUID);
-                if (daoResponse.status == HttpStatus.OK) {
-                    response =  ResponseEntity.status(HttpStatus.OK).body("Successfully edited");
+        if (user == null) {
+            response = ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("123");
+        } else {
+            if (requestedPage != null) {
+                if (requestedPage.getOwnerID() == user.getId()) {
+                    daoResponse = pageDAO.editPage(body, pageUUID);
+                    if (daoResponse.status == HttpStatus.OK) {
+                        response =  ResponseEntity.status(HttpStatus.OK).body("Successfully edited");
+                    } else {
+                        response = ResponseEntity.status(HttpStatus.CONFLICT).body("Something went wrong");
+                    }
                 } else {
-                    response = ResponseEntity.status(HttpStatus.CONFLICT).body("Something went wrong");
+                    response = ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to edit this page");
+
                 }
             } else {
-                response = ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to edit this page");
-
+                response =  ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT_FOUND");
             }
-        } else {
-            response =  ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT_FOUND");
         }
         return response;
     }
