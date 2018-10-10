@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class User {
     private  int id;
     private String login;
-    private String defaultEmail;
+    private String default_email;
     private String token;
 
 
@@ -14,12 +14,12 @@ public class User {
     public User(
             @JsonProperty("id") Integer id,
             @JsonProperty("login") String login,
-            @JsonProperty("default_email") String defaultEmail,
+            @JsonProperty("default_email") String default_email,
             @JsonProperty("token") String token
     ) {
         this.id = id;
         this.login = login;
-        this.defaultEmail = defaultEmail;
+        this.default_email = default_email;
         this.token = token;
     }
 
@@ -28,7 +28,7 @@ public class User {
     public User() {
         this.id = 0;
         this.login = "created";
-        this.defaultEmail = "created";
+        this.default_email = "created";
         this.token = "created";
     }
 
@@ -49,12 +49,12 @@ public class User {
         this.login = login;
     }
 
-    public String getDefaultEmail() {
-        return defaultEmail;
+    public String getDefault_email() {
+        return default_email;
     }
 
-    public void setDefaultEmail(String defaultEmail) {
-        this.defaultEmail = defaultEmail;
+    public void setDefault_email(String default_email) {
+        this.default_email = default_email;
     }
 
     public String getToken() {

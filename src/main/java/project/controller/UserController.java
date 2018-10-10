@@ -89,12 +89,23 @@ public class UserController {
                 in.close();
 
                 Gson g = new Gson();
+                System.out.println(content.toString());
                 User user = g.fromJson(content.toString(), User.class);
+                System.out.println(user.getDefault_email());
                 user.setToken(token.getToken());
                 DAOResponse<User> daoResponse = userDAO.createUser(user);
                 if (daoResponse.status == HttpStatus.CONFLICT) {
                     response =  ResponseEntity.status(HttpStatus.CONFLICT).body("User exists");
-                    DAOResponse<Integer> daoResponse1 = userDAO.getUserID(user.getDefaultEmail());
+                    DAOResponse<Integer> daoResponse1 = userDAO.getUserID(user.getDefault_email());
+//                    if (user == null) {
+//                        System.out.println("user");
+//                    }
+//                    if (daoResponse1 == null ) {
+//                            System.out.println("dao");
+//                    }
+//                    if (daoResponse1.body == null) {
+//                        System.out.println("body");
+//                    }
                     user.setId(daoResponse1.body);
                     httpSession.setAttribute(SESSION_KEY, user);
                 } else {

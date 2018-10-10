@@ -33,7 +33,7 @@ public class UserDAO {
                         "INSERT INTO \"user\"(login, email, token)" + " VALUES(?, ?, ?) returning id;" ,
                         PreparedStatement.RETURN_GENERATED_KEYS);
                 statement.setString(1, body.getLogin());
-                statement.setString(2, body.getDefaultEmail());
+                statement.setString(2, body.getDefault_email());
                 statement.setString(3, body.getToken());
                 return statement;
             }, keyHolder);
@@ -95,7 +95,7 @@ public class UserDAO {
         DAOResponse<Integer> result = new DAOResponse<>();
         try {
             final User user =  template.queryForObject(
-                    "SELECT * FROM user WHERE email = ?",
+                    "SELECT * FROM \"user\" WHERE email = ?",
                     new Object[]{email},  userMapper);
 
             result.body = user.getId();
