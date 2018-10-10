@@ -13,7 +13,6 @@ import project.model.DAOResponse;
 
 import java.sql.Array;
 import java.sql.PreparedStatement;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +29,6 @@ public class PageDAO {
     public DAOResponse<Page> createPage(Page body)  {
         DAOResponse<Page> result = new DAOResponse<>();
         result.body = null;
-        System.out.println("2");
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         try {
             template.update(con -> {
@@ -141,21 +139,21 @@ public class PageDAO {
 
         switch(own) {
             case "me":
-                sqlQuery = "SELECT uuid, title, date, time FROM page WHERE ownerID = ?";
+                sqlQuery = "SELECT uuid, title, date FROM page WHERE ownerID = ? ";
                 break;
             case "others":
-                sqlQuery = "SELECT pageUUID AS uuid, title, date, time FROM userPages WHERE userID = ?";
+                sqlQuery = "SELECT pageUUID AS uuid, title, date FROM userPages WHERE userID = ? ";
 
                 break;
             case "all":
                 tmpObj.add(userID);
-                sqlQuery = "SELECT uuid, title, date, time FROM page WHERE ownerID = ?" +
-                        "UNION SELECT pageUUID as id, title, date, time from userPages WHERE userID = ?";
+                sqlQuery = "SELECT uuid, title, date FROM page WHERE ownerID = ?" +
+                        "UNION SELECT pageUUID as id, title, date from userPages WHERE userID = ? ";
                 break;
             default:
                 tmpObj.add(userID);
-                sqlQuery = "SELECT uuid, title,  date, time FROM page WHERE ownerID = ?" +
-                        "UNION SELECT pageUUID as id, title, date, time FROM userPages WHERE userID = ?";
+                sqlQuery = "SELECT uuid, title,  date FROM page WHERE ownerID = ? " +
+                        "UNION SELECT pageUUID as id, title, date FROM userPages WHERE userID = ? ";
                 break;
         }
 

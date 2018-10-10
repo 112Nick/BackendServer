@@ -35,7 +35,7 @@ public class PageController {
     @RequestMapping(path = "/create", method = RequestMethod.POST, produces = APPLICATION_JSON)
     public ResponseEntity<?> createPage(@RequestBody Page body, HttpSession httpSession) {
         User user = (User) httpSession.getAttribute(SESSION_KEY);
-        body.setOwnerID(user.getId());
+        body.setOwnerID(user.getId()); //NullPointer
         UUID uuid = UUID.randomUUID();
         body.setUUID(uuid.toString());
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
@@ -81,6 +81,7 @@ public class PageController {
     public ResponseEntity<?> editPagePost(@RequestBody Page body, @PathVariable("id") String pageUUID, HttpSession httpSession) {
         User user = (User) httpSession.getAttribute(SESSION_KEY);
         ResponseEntity response;
+        System.out.println("edit");
         DAOResponse<Page> daoResponse = pageDAO.getPageByID(pageUUID);
         Page requestedPage = daoResponse.body;
         if (requestedPage != null) {
@@ -107,21 +108,26 @@ public class PageController {
         ResponseEntity response;
         DAOResponse<Page> daoResponse = pageDAO.getPageByID(pageUUID);
         Page requestedPage = daoResponse.body;
-        if (requestedPage != null) {
-            if (requestedPage.getOwnerID() == user.getId()) {
-                daoResponse = pageDAO.deletePage(pageUUID);
-                if (daoResponse.status == HttpStatus.OK) {
-                    response =  ResponseEntity.status(HttpStatus.OK).body("Successfully deleted");
+        if (user == null) {
+            response = ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("123");
+        } else {
+            if (requestedPage != null) {
+                if (requestedPage.getOwnerID() == user.getId()) {
+                    daoResponse = pageDAO.deletePage(pageUUID);
+                    if (daoResponse.status == HttpStatus.OK) {
+                        response =  ResponseEntity.status(HttpStatus.OK).body("Successfully deleted");
+                    } else {
+                        response = ResponseEntity.status(HttpStatus.NOT_FOUND).body("Something went wrong");
+                    }
                 } else {
-                    response = ResponseEntity.status(HttpStatus.NOT_FOUND).body("Something went wrong");
+                    response = ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to edit this page");
+
                 }
             } else {
-                response = ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to edit this page");
-
+                response =  ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT_FOUND");
             }
-        } else {
-            response =  ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT_FOUND");
         }
+
         return response;
     }
 }
