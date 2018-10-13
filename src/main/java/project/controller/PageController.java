@@ -46,6 +46,9 @@ public class PageController {
             Instant instant = timestamp.toInstant();
             body.setDate(instant.toString());
             body.setOwnerID(user.getId());
+            if (body.getTitle().equals("")) {
+                body.setTitle("Unnamed");
+            }
             DAOResponse<Page> daoResponse = pageDAO.createPage(body);
             if (daoResponse.status == HttpStatus.CREATED) {
                 response = ResponseEntity.status(HttpStatus.CREATED).body(body);
@@ -96,6 +99,9 @@ public class PageController {
         } else {
             if (requestedPage != null) {
                 if (requestedPage.getOwnerID() == user.getId()) {
+                    if (body.getTitle().equals("")) {
+                        body.setTitle("Unnamed");
+                    }
                     daoResponse = pageDAO.editPage(body, pageUUID);
                     if (daoResponse.status == HttpStatus.OK) {
                         response =  ResponseEntity.status(HttpStatus.OK).body("Successfully edited");
