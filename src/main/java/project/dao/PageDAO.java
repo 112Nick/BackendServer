@@ -131,6 +131,7 @@ public class PageDAO {
         DAOResponse<List<Page>> daoResponse = new DAOResponse<>();
         List<Object> tmpObj = new ArrayList<>();
         tmpObj.add(userID);
+        tmpObj.add(userID);
         String sqlQuery;
 
         if (sort == null || sort.equals("")) {
@@ -154,6 +155,7 @@ public class PageDAO {
                 break;
             case "all":
                 tmpObj.add(userID);
+                tmpObj.add(userID);
                 sqlQuery = "SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date, " +
                         "CASE WHEN ownerid = ? THEN true ELSE false END AS ismine " +
                         "FROM page WHERE ownerid = ? " +
@@ -162,6 +164,7 @@ public class PageDAO {
                         "FROM userpages JOIN page ON pageuuid = uuid WHERE userid = ?";
                 break;
             default:
+                tmpObj.add(userID);
                 tmpObj.add(userID);
                 sqlQuery = "SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date, " +
                         "CASE WHEN ownerid = ? THEN true ELSE false END AS ismine  " +
