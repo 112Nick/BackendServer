@@ -126,6 +126,25 @@ public class PageDAO {
 
     }
 
+    public DAOResponse<Page> deletePageFromViewers(String pageUUID) {
+        DAOResponse<Page> result = new DAOResponse<>();
+        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+        try {
+            template.update(con -> {
+                PreparedStatement statement = con.prepareStatement(
+                        "DELETE FROM userpages WHERE pageuuid = ?",
+                        PreparedStatement.RETURN_GENERATED_KEYS);
+                statement.setString(1 , pageUUID);
+                return statement;
+            }, keyHolder);
+            result.status = HttpStatus.OK;
+        }
+        catch (Exception e) {
+            result.status = HttpStatus.NOT_FOUND;
+        }
+        return result;
+    }
+
 
     public DAOResponse<List<Page>> getUsersPages(Integer userID, String sort, String own, String search) {
         DAOResponse<List<Page>> daoResponse = new DAOResponse<>();

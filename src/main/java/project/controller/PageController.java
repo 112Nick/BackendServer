@@ -131,6 +131,7 @@ public class PageController {
                 if (requestedPage.getOwnerID() == user.getId()) {
                     daoResponse = pageDAO.deletePage(pageUUID);
                     if (daoResponse.status == HttpStatus.OK) {
+                        pageDAO.deletePageFromViewers(pageUUID);
                         response =  ResponseEntity.status(HttpStatus.OK).body("Successfully deleted");
                     } else {
                         response = ResponseEntity.status(HttpStatus.NOT_FOUND).body("Something went wrong");
