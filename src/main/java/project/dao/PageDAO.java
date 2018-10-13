@@ -35,7 +35,7 @@ public class PageDAO {
                 PreparedStatement statement = con.prepareStatement(
                         "INSERT INTO page(uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date)" + " VALUES(?, ?, ?, ?, ?, ?, ?, ?)" ,
                         PreparedStatement.RETURN_GENERATED_KEYS);
-                statement.setString(1, body.getUUID());
+                statement.setString(1, body.getUuid());
                 statement.setInt(2, body.getOwnerID());
                 statement.setString(3, body.getTitle());
                 statement.setBoolean(4, body.isPublic());
@@ -63,11 +63,11 @@ public class PageDAO {
             final Page foundPage =  template.queryForObject(
                     "SELECT * FROM page WHERE uuid = ?",
                     new Object[]{pageUUID},  pageMapper);
-
             result.body = foundPage;
             result.status = HttpStatus.OK;
         }
         catch (DataAccessException e) {
+            e.printStackTrace();
             result.body = null;
             result.status = HttpStatus.NOT_FOUND;
         }
@@ -156,44 +156,44 @@ public class PageDAO {
             case "all":
                 tmpObj.add(userID);
                 tmpObj.add(userID);
-                sqlQuery = "SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date, " +
+                sqlQuery = "SELECT * FROM (SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date, " +
                         "CASE WHEN ownerid = ? THEN true ELSE false END AS ismine " +
                         "FROM page WHERE ownerid = ? " +
                         "UNION SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date, " +
                         "CASE WHEN ownerid = ? THEN true ELSE false END AS ismine " +
-                        "FROM userpages JOIN page ON pageuuid = uuid WHERE userid = ?";
+                        "FROM userpages JOIN page ON pageuuid = uuid WHERE userid = ?) as h";
                 break;
             default:
                 tmpObj.add(userID);
                 tmpObj.add(userID);
-                sqlQuery = "SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date, " +
+                sqlQuery = "SELECT * FROM (SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date, " +
                         "CASE WHEN ownerid = ? THEN true ELSE false END AS ismine  " +
                         "FROM page WHERE ownerid = ? " +
                         "UNION SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date, " +
                         "CASE WHEN ownerid = ? THEN true ELSE false END AS ismine " +
-                        "FROM userpages JOIN page ON pageuuid = uuid WHERE userid = ?";
+                        "FROM userpages JOIN page ON pageuuid = uuid WHERE userid = ?) as h";
                 break;
         }
 
         if (search != null && !search.isEmpty()) {
-            sqlQuery += "WHERE title LIKE '%?%'";
-            tmpObj.add(search);
+            sqlQuery += " WHERE title LIKE '%" + search + "%'";
+//            tmpObj.add(search);
         }
 
 
         switch (sort) {
             case "alphabet":
-                sqlQuery += "ORDER BY title";
+                sqlQuery += " ORDER BY title";
                 break;
             case "date":
                 //TODO
-                sqlQuery += "ORDER BY date";
+                sqlQuery += " ORDER BY date";
                 break;
         }
 
         try {
             final List<Page> foundPages =  template.query( sqlQuery,
-                    tmpObj.toArray(), pageMapper);
+                    tmpObj.toArray(), pageFullMapper);
             daoResponse.body = foundPages;
             daoResponse.status = HttpStatus.OK;
         }
@@ -213,6 +213,19 @@ public class PageDAO {
 
 
     public static final RowMapper<Page> pageMapper = (res, num) -> {
+        String uuid = res.getString("uuid");
+        Integer ownerID = res.getInt("ownerid");
+        String title = res.getString("title");
+        Boolean isPublic = res.getBoolean("ispublic");
+        Boolean isStatic = res.getBoolean("isstatic");
+        Array fieldsNames = res.getArray("fieldsnames");
+        Array fieldsValues = res.getArray("fieldsvalues");
+        String date = res.getString("date");
+
+        return new Page(uuid, ownerID, title, isPublic, isStatic, true, (String[])fieldsNames.getArray(), (String[])fieldsValues.getArray(), date);
+    };
+
+    public static final RowMapper<Page> pageFullMapper = (res, num) -> {
         String uuid = res.getString("uuid");
         Integer ownerID = res.getInt("ownerid");
         String title = res.getString("title");

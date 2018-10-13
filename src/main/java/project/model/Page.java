@@ -66,11 +66,11 @@ public class Page {
         this.date = date;
     }
 
-    public String getUUID() {
+    public String getUuid() {
         return uuid;
     }
 
-    public void setUUID(String UUID) {
+    public void setUuid(String UUID) {
         this.uuid = UUID;
     }
 
@@ -113,4 +113,5 @@ public class Page {
     public void setFieldsValues(String[] fieldsValues) {
         this.fieldsValues = fieldsValues;
     }
+
 }

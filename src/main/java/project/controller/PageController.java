@@ -13,7 +13,6 @@ import project.model.User;
 import javax.servlet.http.HttpSession;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @ResponseBody
@@ -41,7 +40,7 @@ public class PageController {
         } else {
             body.setOwnerID(user.getId()); //NullPointer
             UUID uuid = UUID.randomUUID();
-            body.setUUID(uuid.toString());
+            body.setUuid(uuid.toString());
             Timestamp timestamp = new Timestamp(System.currentTimeMillis());
             Instant instant = timestamp.toInstant();
             body.setDate(instant.toString());

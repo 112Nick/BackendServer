@@ -116,12 +116,10 @@ public class UserDAO {
         try {
             template.update(con -> {
                 PreparedStatement statement = con.prepareStatement(
-                        "INSERT INTO userpages(userid, pageuuid, title, date)" + " VALUES(?, ?, ?, ?)" ,
+                        "INSERT INTO userpages(userid, pageuuid)" + " VALUES(?, ?)" ,
                         PreparedStatement.RETURN_GENERATED_KEYS);
                 statement.setInt(1, userID);
                 statement.setString(2, pageID);
-                statement.setString(3, pageTitle);
-                statement.setString(4, date);
                 return statement;
             }, keyHolder);
             result.status = HttpStatus.CREATED;
