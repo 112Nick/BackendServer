@@ -10,6 +10,7 @@ public class Page {
     private String title;
     private boolean isPublic;
     private boolean isStatic;
+    private boolean isMine;
     private String[] fieldsNames;
     private String[] fieldsValues;
     private String date;
@@ -21,20 +22,32 @@ public class Page {
 
 
     @JsonCreator
-    public Page( @JsonProperty("ownerID") int ownerID,
+    public Page( @JsonProperty("uuid") String uuid,
+                 @JsonProperty("ownerID") int ownerID,
                  @JsonProperty("title") String title,
                  @JsonProperty("isPublic") boolean isPublic,
                  @JsonProperty("isStatic") boolean isStatic,
+                 @JsonProperty("isMine") boolean isMine,
                  @JsonProperty("fieldsNames") String[] fieldsNames,
                  @JsonProperty("fieldsValues") String[] fieldsValues,
                  @JsonProperty("date") String date) {
+        this.uuid = uuid;
         this.ownerID = ownerID;
         this.title = title;
         this.isPublic = isPublic;
         this.isStatic = isStatic;
+        this.isMine = isMine;
         this.fieldsNames = fieldsNames;
         this.fieldsValues = fieldsValues;
         this.date = date;
+    }
+
+    public boolean isMine() {
+        return isMine;
+    }
+
+    public void setMine(boolean mine) {
+        isMine = mine;
     }
 
     public boolean isStatic() {

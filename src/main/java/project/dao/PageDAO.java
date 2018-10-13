@@ -142,21 +142,33 @@ public class PageDAO {
 
         switch(own) {
             case "me":
-                sqlQuery = "SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date FROM page WHERE ownerid = ?";
+                sqlQuery = "SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date " +
+                        "CASE WHEN ownerid = ? THEN true ELSE false END AS ismine " +
+                        "FROM page WHERE ownerid = ?";
                 break;
             case "others":
-                sqlQuery = "SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date FROM userpages JOIN page ON pageuuid = uuid WHERE userid = ? ";
+                sqlQuery = "SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date " +
+                        "CASE WHEN ownerid = ? THEN true ELSE false END AS ismine " +
+                        "FROM userpages JOIN page ON pageuuid = uuid WHERE userid = ? ";
 
                 break;
             case "all":
                 tmpObj.add(userID);
-                sqlQuery = "SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date FROM page WHERE ownerid = ? " +
-                        "UNION SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date FROM userpages JOIN page ON pageuuid = uuid WHERE userid = ?";
+                sqlQuery = "SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date " +
+                        "CASE WHEN ownerid = ? THEN true ELSE false END AS ismine " +
+                        "FROM page WHERE ownerid = ? " +
+                        "UNION SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date " +
+                        "CASE WHEN ownerid = ? THEN true ELSE false END AS ismine " +
+                        "FROM userpages JOIN page ON pageuuid = uuid WHERE userid = ?";
                 break;
             default:
                 tmpObj.add(userID);
-                sqlQuery = "SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date FROM page WHERE ownerid = ? " +
-                        "UNION SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date FROM userpages JOIN page ON pageuuid = uuid WHERE userid = ?";
+                sqlQuery = "SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date " +
+                        "CASE WHEN ownerid = ? THEN true ELSE false END AS ismine  " +
+                        "FROM page WHERE ownerid = ? " +
+                        "UNION SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date " +
+                        "CASE WHEN ownerid = ? THEN true ELSE false END AS ismine " +
+                        "FROM userpages JOIN page ON pageuuid = uuid WHERE userid = ?";
                 break;
         }
 
@@ -203,11 +215,12 @@ public class PageDAO {
         String title = res.getString("title");
         Boolean isPublic = res.getBoolean("ispublic");
         Boolean isStatic = res.getBoolean("isstatic");
+        Boolean isMine = res.getBoolean("ismine");
         Array fieldsNames = res.getArray("fieldsnames");
         Array fieldsValues = res.getArray("fieldsvalues");
         String date = res.getString("date");
 
-        return new Page(ownerID, title, isPublic, isStatic, (String[])fieldsNames.getArray(), (String[])fieldsValues.getArray(), date);
+        return new Page(uuid, ownerID, title, isPublic, isStatic, isMine, (String[])fieldsNames.getArray(), (String[])fieldsValues.getArray(), date);
     };
 
     public static final RowMapper<PageCut> pageCutMapper = (res, num) -> {
