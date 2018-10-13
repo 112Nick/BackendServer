@@ -9,6 +9,7 @@ public class Page {
     private int ownerID;
     private String title;
     private boolean isPublic;
+    private boolean isStatic;
     private String[] fieldsNames;
     private String[] fieldsValues;
     private String date;
@@ -23,17 +24,26 @@ public class Page {
     public Page( @JsonProperty("ownerID") int ownerID,
                  @JsonProperty("title") String title,
                  @JsonProperty("isPublic") boolean isPublic,
+                 @JsonProperty("isStatic") boolean isStatic,
                  @JsonProperty("fieldsNames") String[] fieldsNames,
                  @JsonProperty("fieldsValues") String[] fieldsValues,
                  @JsonProperty("date") String date) {
         this.ownerID = ownerID;
         this.title = title;
         this.isPublic = isPublic;
+        this.isStatic = isStatic;
         this.fieldsNames = fieldsNames;
         this.fieldsValues = fieldsValues;
         this.date = date;
     }
 
+    public boolean isStatic() {
+        return isStatic;
+    }
+
+    public void setStatic(boolean aStatic) {
+        isStatic = aStatic;
+    }
 
     public String getDate() {
         return date;

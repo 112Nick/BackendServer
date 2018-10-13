@@ -33,15 +33,16 @@ public class PageDAO {
         try {
             template.update(con -> {
                 PreparedStatement statement = con.prepareStatement(
-                        "INSERT INTO page(uuid, ownerid, title, ispublic, fieldsnames, fieldsvalues, date)" + " VALUES(?, ?, ?, ?, ?, ?, ?)" ,
+                        "INSERT INTO page(uuid, ownerid, title, ispublic, isstatic fieldsnames, fieldsvalues, date)" + " VALUES(?, ?, ?, ?, ?, ?, ?)" ,
                         PreparedStatement.RETURN_GENERATED_KEYS);
                 statement.setString(1, body.getUUID());
                 statement.setInt(2, body.getOwnerID());
                 statement.setString(3, body.getTitle());
                 statement.setBoolean(4, body.isPublic());
-                statement.setArray(5, con.createArrayOf("TEXT", body.getFieldsNames()));
-                statement.setArray(6, con.createArrayOf("TEXT", body.getFieldsValues()));
-                statement.setString(7, body.getDate());
+                statement.setBoolean(5, body.isStatic());
+                statement.setArray(6, con.createArrayOf("TEXT", body.getFieldsNames()));
+                statement.setArray(7, con.createArrayOf("TEXT", body.getFieldsValues()));
+                statement.setString(8, body.getDate());
                 return statement;
             }, keyHolder);
             result.status = HttpStatus.CREATED;
@@ -85,15 +86,17 @@ public class PageDAO {
                         "UPDATE page SET " +
                                 " title = ?," +
                                 " ispublic = ?, " +
+                                " isstatic = ?, " +
                                 " fieldsnames = ?, " +
                                 " fieldsvalues = ? " +
                                 "WHERE uuid = ?",
                         PreparedStatement.RETURN_GENERATED_KEYS);
                 statement.setString(1 , body.getTitle());
                 statement.setBoolean(2, body.isPublic());
-                statement.setArray(3, con.createArrayOf("TEXT", body.getFieldsNames()));
-                statement.setArray(4, con.createArrayOf("TEXT", body.getFieldsValues()));
-                statement.setString(5, pageUUID);
+                statement.setBoolean(3, body.isStatic());
+                statement.setArray(4, con.createArrayOf("TEXT", body.getFieldsNames()));
+                statement.setArray(5, con.createArrayOf("TEXT", body.getFieldsValues()));
+                statement.setString(6, pageUUID);
                 return statement;
             }, keyHolder);
             result.status = HttpStatus.OK;
@@ -124,8 +127,8 @@ public class PageDAO {
     }
 
 
-    public DAOResponse<List<PageCut>> getUsersPages(Integer userID, String sort, String own, String search) {
-        DAOResponse<List<PageCut>> daoResponse = new DAOResponse<>();
+    public DAOResponse<List<Page>> getUsersPages(Integer userID, String sort, String own, String search) {
+        DAOResponse<List<Page>> daoResponse = new DAOResponse<>();
         List<Object> tmpObj = new ArrayList<>();
         tmpObj.add(userID);
         String sqlQuery;
@@ -139,21 +142,21 @@ public class PageDAO {
 
         switch(own) {
             case "me":
-                sqlQuery = "SELECT uuid, title, date FROM page WHERE ownerID = ? ";
+                sqlQuery = "SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date FROM page WHERE ownerid = ?";
                 break;
             case "others":
-                sqlQuery = "SELECT pageUUID AS uuid, title, date FROM userPages WHERE userID = ? ";
+                sqlQuery = "SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date FROM userpages JOIN page ON pageuuid = uuid WHERE userid = ? ";
 
                 break;
             case "all":
                 tmpObj.add(userID);
-                sqlQuery = "SELECT uuid, title, date FROM page WHERE ownerID = ?" +
-                        "UNION SELECT pageUUID as id, title, date from userPages WHERE userID = ? ";
+                sqlQuery = "SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date FROM page WHERE ownerid = ? " +
+                        "UNION SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date FROM userpages JOIN page ON pageuuid = uuid WHERE userid = ?";
                 break;
             default:
                 tmpObj.add(userID);
-                sqlQuery = "SELECT uuid, title,  date FROM page WHERE ownerID = ? " +
-                        "UNION SELECT pageUUID as id, title, date FROM userPages WHERE userID = ? ";
+                sqlQuery = "SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date FROM page WHERE ownerid = ? " +
+                        "UNION SELECT uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date FROM userpages JOIN page ON pageuuid = uuid WHERE userid = ?";
                 break;
         }
 
@@ -174,8 +177,8 @@ public class PageDAO {
         }
 
         try {
-            final List<PageCut> foundPages =  template.query( sqlQuery,
-                    tmpObj.toArray(), pageCutMapper);
+            final List<Page> foundPages =  template.query( sqlQuery,
+                    tmpObj.toArray(), pageMapper);
             daoResponse.body = foundPages;
             daoResponse.status = HttpStatus.OK;
         }
@@ -199,11 +202,12 @@ public class PageDAO {
         Integer ownerID = res.getInt("ownerid");
         String title = res.getString("title");
         Boolean isPublic = res.getBoolean("ispublic");
+        Boolean isStatic = res.getBoolean("isstatic");
         Array fieldsNames = res.getArray("fieldsnames");
         Array fieldsValues = res.getArray("fieldsvalues");
         String date = res.getString("date");
 
-        return new Page(ownerID, title, isPublic, (String[])fieldsNames.getArray(), (String[])fieldsValues.getArray(), date);
+        return new Page(ownerID, title, isPublic, isStatic, (String[])fieldsNames.getArray(), (String[])fieldsValues.getArray(), date);
     };
 
     public static final RowMapper<PageCut> pageCutMapper = (res, num) -> {

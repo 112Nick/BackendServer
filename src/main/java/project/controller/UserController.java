@@ -4,10 +4,7 @@ package project.controller;
 import com.google.gson.Gson;
 import project.dao.PageDAO;
 import project.dao.UserDAO;
-import project.model.PageCut;
-import project.model.DAOResponse;
-import project.model.Token;
-import project.model.User;
+import project.model.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,7 +38,7 @@ public class UserController {
         User user = (User) httpSession.getAttribute(SESSION_KEY);
         ResponseEntity response;
         if (user != null) {
-            DAOResponse<List<PageCut>> daoResponse = pageDAO.getUsersPages(user.getId(), sort, own, search);
+            DAOResponse<List<Page>> daoResponse = pageDAO.getUsersPages(user.getId(), sort, own, search);
             if (daoResponse.status == HttpStatus.NOT_FOUND) {
                 response = ResponseEntity.status(HttpStatus.NOT_FOUND).body("No pages found");
             } else {

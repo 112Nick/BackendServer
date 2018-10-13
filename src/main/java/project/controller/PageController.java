@@ -22,7 +22,7 @@ import java.util.UUID;
 @RequestMapping("/qr")
 public class PageController {
 
-    public static final String APPLICATION_JSON = "application/json";
+//    public static final String APPLICATION_JSON = "";
     private PageDAO pageDAO;
     private UserDAO userDAO;
     private static final String SESSION_KEY = "SessionKey";
@@ -32,7 +32,7 @@ public class PageController {
         this.userDAO = userDAO;
     }
 
-    @RequestMapping(path = "/create", method = RequestMethod.POST, produces = APPLICATION_JSON)
+    @RequestMapping(path = "/create", method = RequestMethod.POST, produces = "application/json")
     public ResponseEntity<?> createPage(@RequestBody Page body, HttpSession httpSession) {
         User user = (User) httpSession.getAttribute(SESSION_KEY);
         ResponseEntity response;

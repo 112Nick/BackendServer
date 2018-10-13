@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS page (
   ownerID INTEGER,
   title TEXT,
   isPublic BOOLEAN,
+  isStatic BOOLEAN,
   fieldsNames TEXT[],
   fieldsValues TEXT[],
   date TEXT
@@ -21,8 +22,6 @@ CREATE TABLE IF NOT EXISTS page (
 CREATE TABLE IF NOT EXISTS userPages (
   userID INTEGER,
   pageUUID TEXT,
-  title TEXT,
-  date TEXT,
   UNIQUE (userID, pageUUID)
 );
 
