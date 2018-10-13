@@ -137,6 +137,7 @@ public class PageController {
                         response = ResponseEntity.status(HttpStatus.NOT_FOUND).body("Something went wrong");
                     }
                 } else {
+                    pageDAO.deletePageFromViewers(pageUUID);
                     response = ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to edit this page");
 
                 }
