@@ -33,7 +33,7 @@ public class PageDAO {
         try {
             template.update(con -> {
                 PreparedStatement statement = con.prepareStatement(
-                        "INSERT INTO page(uuid, ownerid, title, ispublic, isstatic fieldsnames, fieldsvalues, date)" + " VALUES(?, ?, ?, ?, ?, ?, ?)" ,
+                        "INSERT INTO page(uuid, ownerid, title, ispublic, isstatic fieldsnames, fieldsvalues, date)" + " VALUES(?, ?, ?, ?, ?, ?, ?, ?)" ,
                         PreparedStatement.RETURN_GENERATED_KEYS);
                 statement.setString(1, body.getUUID());
                 statement.setInt(2, body.getOwnerID());
