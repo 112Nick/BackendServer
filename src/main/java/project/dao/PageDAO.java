@@ -183,7 +183,7 @@ public class PageDAO {
 
         switch(own) {
             case "me":
-                sqlQuery = "SELECT uuid, ownerid, title, ispublic, isstatic, template, plAfieldsnames, fieldsvalues, date, " +
+                sqlQuery = "SELECT uuid, ownerid, title, ispublic, isstatic, template, fieldsnames, fieldsvalues, date, " +
                         "CASE WHEN ownerid = ? THEN true ELSE false END AS ismine " +
                         "FROM page WHERE ownerid = ?";
                 break;
@@ -227,7 +227,7 @@ public class PageDAO {
                 sqlQuery += " ORDER BY title DESC";
                 break;
             case "date":
-                sqlQuery += " ORDER BY date";
+                sqlQuery += " ORDER BY date DESC";
                 break;
         }
 
