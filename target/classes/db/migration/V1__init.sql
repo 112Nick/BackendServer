@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS page (
   title TEXT,
   isPublic BOOLEAN,
   isStatic BOOLEAN,
+  template TEXT,
   fieldsNames TEXT[],
   fieldsValues TEXT[],
   date TEXT

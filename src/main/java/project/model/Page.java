@@ -11,6 +11,7 @@ public class Page {
     private boolean isPublic;
     private boolean isStatic;
     private boolean isMine;
+    private String template;
     private String[] fieldsNames;
     private String[] fieldsValues;
     private String date;
@@ -28,6 +29,7 @@ public class Page {
                  @JsonProperty("isPublic") boolean isPublic,
                  @JsonProperty("isStatic") boolean isStatic,
                  @JsonProperty("isMine") boolean isMine,
+                 @JsonProperty("template") String template,
                  @JsonProperty("fieldsNames") String[] fieldsNames,
                  @JsonProperty("fieldsValues") String[] fieldsValues,
                  @JsonProperty("date") String date) {
@@ -37,9 +39,18 @@ public class Page {
         this.isPublic = isPublic;
         this.isStatic = isStatic;
         this.isMine = isMine;
+        this.template = template;
         this.fieldsNames = fieldsNames;
         this.fieldsValues = fieldsValues;
         this.date = date;
+    }
+
+    public String getTemplate() {
+        return template;
+    }
+
+    public void setTemplate(String template) {
+        this.template = template;
     }
 
     public boolean isMine() {

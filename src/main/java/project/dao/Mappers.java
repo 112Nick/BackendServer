@@ -14,11 +14,12 @@ public class Mappers {
         String title = res.getString("title");
         Boolean isPublic = res.getBoolean("ispublic");
         Boolean isStatic = res.getBoolean("isstatic");
+        String template = res.getString("template");
         Array fieldsNames = res.getArray("fieldsnames");
         Array fieldsValues = res.getArray("fieldsvalues");
         String date = res.getString("date");
 
-        return new Page(uuid, ownerID, title, isPublic, isStatic, true, (String[])fieldsNames.getArray(), (String[])fieldsValues.getArray(), date);
+        return new Page(uuid, ownerID, title, isPublic, isStatic, true, template, (String[])fieldsNames.getArray(), (String[])fieldsValues.getArray(), date);
     };
 
     public static final RowMapper<Page> pageFullMapper = (res, num) -> {
@@ -28,11 +29,12 @@ public class Mappers {
         Boolean isPublic = res.getBoolean("ispublic");
         Boolean isStatic = res.getBoolean("isstatic");
         Boolean isMine = res.getBoolean("ismine");
+        String template = res.getString("template");
         Array fieldsNames = res.getArray("fieldsnames");
         Array fieldsValues = res.getArray("fieldsvalues");
         String date = res.getString("date");
 
-        return new Page(uuid, ownerID, title, isPublic, isStatic, isMine, (String[])fieldsNames.getArray(), (String[])fieldsValues.getArray(), date);
+        return new Page(uuid, ownerID, title, isPublic, isStatic, isMine, template, (String[])fieldsNames.getArray(), (String[])fieldsValues.getArray(), date);
     };
 
     public static final RowMapper<User> userMapper = (res, num) -> {
