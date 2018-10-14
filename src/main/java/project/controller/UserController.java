@@ -52,7 +52,7 @@ public class UserController {
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Message("User isn't authorized"));
         }
-        return ResponseEntity.status(HttpStatus.OK).body(user);
+        return ResponseEntity.status(HttpStatus.OK).body(new Message(user.getDefault_email()));
     }
 
     @RequestMapping(path = "/login/yandex", method = RequestMethod.POST, produces = "application/json")
