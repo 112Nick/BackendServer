@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import project.dao.PageDAO;
 import project.dao.UserDAO;
+import project.model.Message;
 import project.model.Page;
 import project.model.DAOResponse;
 import project.model.User;
@@ -21,7 +22,6 @@ import java.util.UUID;
 @RequestMapping("/qr")
 public class PageController {
 
-//    public static final String APPLICATION_JSON = "";
     private PageDAO pageDAO;
     private UserDAO userDAO;
     private static final String SESSION_KEY = "SessionKey";
@@ -34,28 +34,24 @@ public class PageController {
     @RequestMapping(path = "/create", method = RequestMethod.POST, produces = "application/json")
     public ResponseEntity<?> createPage(@RequestBody Page body, HttpSession httpSession) {
         User user = (User) httpSession.getAttribute(SESSION_KEY);
-        ResponseEntity response;
         if (user == null) {
-            response = ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("123");
-        } else {
-            body.setOwnerID(user.getId()); //NullPointer
-            UUID uuid = UUID.randomUUID();
-            body.setUuid(uuid.toString());
-            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-            Instant instant = timestamp.toInstant();
-            body.setDate(instant.toString());
-            body.setOwnerID(user.getId());
-            if (body.getTitle().equals("")) {
-                body.setTitle("Unnamed");
-            }
-            DAOResponse<Page> daoResponse = pageDAO.createPage(body);
-            if (daoResponse.status == HttpStatus.CREATED) {
-                response = ResponseEntity.status(HttpStatus.CREATED).body(body);
-            } else {
-                response = ResponseEntity.status(HttpStatus.FORBIDDEN).body("Something went wrong");
-            }
+             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Message("User isn't authorized"));
         }
-        return response;
+        body.setOwnerID(user.getId());
+        UUID uuid = UUID.randomUUID();
+        body.setUuid(uuid.toString());
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        Instant instant = timestamp.toInstant();
+        body.setDate(instant.toString());
+        body.setOwnerID(user.getId());
+        if (body.getTitle().equals("")) {
+            body.setTitle("Unnamed");
+        }
+        DAOResponse<Page> daoResponse = pageDAO.createPage(body);
+        if (daoResponse.status == HttpStatus.CREATED) {
+            return  ResponseEntity.status(HttpStatus.CREATED).body(body);
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Message("Something went wrong"));
     }
 
     @RequestMapping(path = "/{id}", method = RequestMethod.GET, produces = "application/json")
@@ -64,88 +60,69 @@ public class PageController {
         if (user == null) {
             user = new User();
         }
-        ResponseEntity response;
         DAOResponse<Page> daoResponse = pageDAO.getPageByID(pageUUID);
         Page requestedPage = daoResponse.body;
         if (requestedPage != null) {
             if (requestedPage.isPublic() || requestedPage.getOwnerID() == user.getId()) {
                 if (requestedPage.getOwnerID() != user.getId()) {
-                    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-                    Instant instant = timestamp.toInstant();
-                    userDAO.addViewedPage(user.getId(), pageUUID, requestedPage.getTitle(), instant.toString());
+                    pageDAO.addViewedPage(user.getId(), pageUUID);
                 }
-                response =  ResponseEntity.status(HttpStatus.OK).body(requestedPage);
-            } else {
-                response =  ResponseEntity.status(HttpStatus.FORBIDDEN).body("Requested page is private");
+                requestedPage.setOwnerID(0);
+                return ResponseEntity.status(HttpStatus.OK).body(requestedPage);
             }
-        } else {
-            response = ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT_FOUND");
-
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Message("Requested page is private"));
         }
-        return response;
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Requested page isn't found"));
     }
 
 
     @RequestMapping(path = "/{id}/edit", method = RequestMethod.POST, produces = "application/json")
     public ResponseEntity<?> editPagePost(@RequestBody Page body, @PathVariable("id") String pageUUID, HttpSession httpSession) {
         User user = (User) httpSession.getAttribute(SESSION_KEY);
-        ResponseEntity response;
-        System.out.println("edit");
         DAOResponse<Page> daoResponse = pageDAO.getPageByID(pageUUID);
         Page requestedPage = daoResponse.body;
         if (user == null) {
-            response = ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("123");
-        } else {
-            if (requestedPage != null) {
-                if (requestedPage.getOwnerID() == user.getId()) {
-                    if (body.getTitle().equals("")) {
-                        body.setTitle("Unnamed");
-                    }
-                    daoResponse = pageDAO.editPage(body, pageUUID);
-                    if (daoResponse.status == HttpStatus.OK) {
-                        response =  ResponseEntity.status(HttpStatus.OK).body("Successfully edited");
-                    } else {
-                        response = ResponseEntity.status(HttpStatus.CONFLICT).body("Something went wrong");
-                    }
-                } else {
-                    response = ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to edit this page");
-
-                }
-            } else {
-                response =  ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT_FOUND");
-            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Message("User isn't authorized"));
         }
-        return response;
+        if (requestedPage != null) {
+            if (requestedPage.getOwnerID() == user.getId()) {
+                if (body.getTitle().equals("")) {
+                    body.setTitle("Unnamed");
+                }
+                daoResponse = pageDAO.editPage(body, pageUUID);
+                if (daoResponse.status == HttpStatus.OK) {
+                    return ResponseEntity.status(HttpStatus.OK).body(new Message("Successfully edited"));
+                }
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(new Message("Something went wrong"));
+            }
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Message("You are not allowed to edit this page"));
+        }
+        return  ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Requested page isn't found"));
     }
 
     @RequestMapping(path = "/{id}/delete", method = RequestMethod.DELETE, produces = "application/json")
     public ResponseEntity<?> deletePage(@PathVariable("id") String pageUUID, HttpSession httpSession) {
         User user = (User) httpSession.getAttribute(SESSION_KEY);
-        ResponseEntity response;
         DAOResponse<Page> daoResponse = pageDAO.getPageByID(pageUUID);
         Page requestedPage = daoResponse.body;
         if (user == null) {
-            response = ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("123");
-        } else {
-            if (requestedPage != null) {
-                if (requestedPage.getOwnerID() == user.getId()) {
-                    daoResponse = pageDAO.deletePage(pageUUID);
-                    if (daoResponse.status == HttpStatus.OK) {
-                        pageDAO.deletePageFromViewers(pageUUID);
-                        response =  ResponseEntity.status(HttpStatus.OK).body("Successfully deleted");
-                    } else {
-                        response = ResponseEntity.status(HttpStatus.NOT_FOUND).body("Something went wrong");
-                    }
-                } else {
-                    pageDAO.deletePageFromViewers(pageUUID);
-                    response = ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not allowed to edit this page");
-
-                }
-            } else {
-                response =  ResponseEntity.status(HttpStatus.NOT_FOUND).body("NOT_FOUND");
-            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Message("User isn't authorized"));
         }
-
-        return response;
+        if (requestedPage != null) {
+            if (requestedPage.getOwnerID() == user.getId()) {
+                daoResponse = pageDAO.deletePage(pageUUID);
+                if (daoResponse.status == HttpStatus.OK) {
+                    pageDAO.deletePageFromViewers(pageUUID);
+                    return ResponseEntity.status(HttpStatus.OK).body(new Message("Successfully deleted"));
+                }
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Something went wrong"));
+            }
+            daoResponse = pageDAO.deletePageFromViewers(pageUUID);
+            if (daoResponse.status == HttpStatus.OK) {
+                return ResponseEntity.status(HttpStatus.OK).body(new Message("Successfully deleted"));
+            }
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Message("You are not allowed to edit this page"));
+        }
+        return  ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Requested page isn't found"));
     }
 }

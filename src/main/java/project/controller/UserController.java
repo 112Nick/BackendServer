@@ -36,38 +36,27 @@ public class UserController {
                                          @RequestParam(value = "own", required = false) String own,
                                          @RequestParam(value = "search", required = false) String search) {
         User user = (User) httpSession.getAttribute(SESSION_KEY);
-        ResponseEntity response;
-        if (user != null) {
-            DAOResponse<List<Page>> daoResponse = pageDAO.getUsersPages(user.getId(), sort, own, search);
-            if (daoResponse.status == HttpStatus.NOT_FOUND) {
-                response = ResponseEntity.status(HttpStatus.NOT_FOUND).body("No pages found");
-            } else {
-                response =  ResponseEntity.status(HttpStatus.OK).body(daoResponse.body);
-            }
-        } else {
-            response = ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User unauthorized");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Message("User isn't authorized"));
         }
-        return response;
+        DAOResponse<List<Page>> daoResponse = pageDAO.getUsersPages(user.getId(), sort, own, search);
+        if (daoResponse.status == HttpStatus.NOT_FOUND) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("No pages found, check filters or create new one"));
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(daoResponse.body);
     }
-
 
     @RequestMapping(path = "/getuser", method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<?> getUser(HttpSession httpSession) {
-        ResponseEntity response;
         final User user = (User) httpSession.getAttribute(SESSION_KEY);
-        if (user != null) {
-            response = ResponseEntity.status(HttpStatus.OK).body(user);
-        } else {
-            response = ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("UNAUTHORIZED");
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Message("User isn't authorized"));
         }
-        return response;
+        return ResponseEntity.status(HttpStatus.OK).body(user);
     }
-
-
 
     @RequestMapping(path = "/login/yandex", method = RequestMethod.POST, produces = "application/json")
     public ResponseEntity<?> loginUser(@RequestBody Token token, HttpSession httpSession) {
-        ResponseEntity response;
         try{
             URL url = new URL("https://login.yandex.ru/info?format=json");
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -84,7 +73,6 @@ public class UserController {
                     content.append(inputLine);
                 }
                 in.close();
-
                 Gson g = new Gson();
                 System.out.println(content.toString());
                 User user = g.fromJson(content.toString(), User.class);
@@ -92,43 +80,33 @@ public class UserController {
                 user.setToken(token.getToken());
                 DAOResponse<User> daoResponse = userDAO.createUser(user);
                 if (daoResponse.status == HttpStatus.CONFLICT) {
-                    response =  ResponseEntity.status(HttpStatus.CONFLICT).body("User exists");
                     DAOResponse<Integer> daoResponse1 = userDAO.getUserID(user.getDefault_email());
                     user.setId(daoResponse1.body);
                     httpSession.setAttribute(SESSION_KEY, user);
-                } else {
-                    user.setId(daoResponse.body.getId());
-                    httpSession.setAttribute(SESSION_KEY, user);
-                    response = ResponseEntity.status(HttpStatus.OK).body("Successfully registered");
+                    return ResponseEntity.status(HttpStatus.OK).body(new Message("User isn't new"));
                 }
-
-            } else {
-                response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Try another service to login 1");
+                user.setId(daoResponse.body.getId());
+                httpSession.setAttribute(SESSION_KEY, user);
+                return ResponseEntity.status(HttpStatus.CREATED).body(new Message("Successfully registered"));
             }
-
             con.disconnect();
-
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Message("Try another service to login 1"));
         } catch (Exception e) {
             e.printStackTrace();
-            response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Try another service to login 2");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Message("Try another service to login 2"));
         }
-        return response;
-
     }
 
     @RequestMapping(path = "/logout", method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<?> logoutUser(HttpSession httpSession) {
-        ResponseEntity response;
         if (httpSession.getAttribute(SESSION_KEY) != null) {
             httpSession.invalidate();
-            response = ResponseEntity.status(HttpStatus.OK).body("Successful logout");
-        } else {
-            response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Unsuccessful logout");
+            return ResponseEntity.status(HttpStatus.OK).body(new Message("Successful logout"));
         }
-        return response;
-
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Message("Unsuccessful logout"));
     }
 
+    ///////////////////////////////////////////
     @RequestMapping(path = "/dropdb", method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<?> clearTables(HttpSession httpSession) {
         ResponseEntity response;
@@ -137,4 +115,5 @@ public class UserController {
         return response;
 
     }
+    //////////////////////////////////////////
 }

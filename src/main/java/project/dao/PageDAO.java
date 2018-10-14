@@ -4,14 +4,12 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Service;
 import project.model.Page;
-import project.model.PageCut;
 import project.model.DAOResponse;
+import project.model.User;
 
-import java.sql.Array;
 import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +23,6 @@ public class PageDAO {
         this.template = template;
     }
 
-
     public DAOResponse<Page> createPage(Page body)  {
         DAOResponse<Page> result = new DAOResponse<>();
         result.body = null;
@@ -33,7 +30,8 @@ public class PageDAO {
         try {
             template.update(con -> {
                 PreparedStatement statement = con.prepareStatement(
-                        "INSERT INTO page(uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date)" + " VALUES(?, ?, ?, ?, ?, ?, ?, ?)" ,
+                        "INSERT INTO page(uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date)" +
+                                " VALUES(?, ?, ?, ?, ?, ?, ?, ?)" ,
                         PreparedStatement.RETURN_GENERATED_KEYS);
                 statement.setString(1, body.getUuid());
                 statement.setInt(2, body.getOwnerID());
@@ -49,8 +47,7 @@ public class PageDAO {
             return result;
         }
         catch (DuplicateKeyException e) {
-            System.out.println("3");
-
+            e.printStackTrace();
             result.status = HttpStatus.CONFLICT;
         }
         return result;
@@ -62,7 +59,7 @@ public class PageDAO {
         try {
             final Page foundPage =  template.queryForObject(
                     "SELECT * FROM page WHERE uuid = ?",
-                    new Object[]{pageUUID},  pageMapper);
+                    new Object[]{pageUUID},  Mappers.pageMapper);
             result.body = foundPage;
             result.status = HttpStatus.OK;
         }
@@ -101,6 +98,7 @@ public class PageDAO {
             }, keyHolder);
             result.status = HttpStatus.OK;
         } catch(DuplicateKeyException e){
+            e.printStackTrace();
             result.status = HttpStatus.CONFLICT;
         }
         return result;
@@ -120,6 +118,7 @@ public class PageDAO {
             result.status = HttpStatus.OK;
         }
         catch (Exception e) {
+            e.printStackTrace();
             result.status = HttpStatus.NOT_FOUND;
         }
         return result;
@@ -140,7 +139,29 @@ public class PageDAO {
             result.status = HttpStatus.OK;
         }
         catch (Exception e) {
+            e.printStackTrace();
             result.status = HttpStatus.NOT_FOUND;
+        }
+        return result;
+    }
+
+    public DAOResponse<User> addViewedPage(Integer userID, String pageID)  {
+        DAOResponse<User> result = new DAOResponse<>();
+        result.body = null;
+        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+        try {
+            template.update(con -> {
+                PreparedStatement statement = con.prepareStatement(
+                        "INSERT INTO userpages(userid, pageuuid)" + " VALUES(?, ?)" ,
+                        PreparedStatement.RETURN_GENERATED_KEYS);
+                statement.setInt(1, userID);
+                statement.setString(2, pageID);
+                return statement;
+            }, keyHolder);
+            result.status = HttpStatus.CREATED;
+        }
+        catch (DuplicateKeyException e) {
+            result.status = HttpStatus.CONFLICT;
         }
         return result;
     }
@@ -154,7 +175,7 @@ public class PageDAO {
         String sqlQuery;
 
         if (sort == null || sort.equals("")) {
-            sort = "alphabet";
+            sort = "a-z";
         }
         if (own == null || own.equals("")) {
             own = "all";
@@ -196,24 +217,23 @@ public class PageDAO {
 
         if (search != null && !search.isEmpty()) {
             sqlQuery += " WHERE title LIKE '%" + search + "%'";
-//            tmpObj.add(search);
         }
 
-
         switch (sort) {
-            case "alphabet":
+            case "a-z":
                 sqlQuery += " ORDER BY title";
                 break;
+            case "z-a":
+                sqlQuery += " ORDER BY title DESC";
+                break;
             case "date":
-                //TODO
                 sqlQuery += " ORDER BY date";
                 break;
         }
 
         try {
-            final List<Page> foundPages =  template.query( sqlQuery,
-                    tmpObj.toArray(), pageFullMapper);
-            daoResponse.body = foundPages;
+            daoResponse.body = template.query( sqlQuery,
+                    tmpObj.toArray(), Mappers.pageFullMapper);
             daoResponse.status = HttpStatus.OK;
         }
         catch (DataAccessException e) {
@@ -224,46 +244,12 @@ public class PageDAO {
         return daoResponse;
     }
 
+    ///////////////////////////////
     public void dropTables() {
         template.update(
                 "TRUNCATE page, userpages CASCADE;" //TODO only users when connected
         );
     }
-
-
-    public static final RowMapper<Page> pageMapper = (res, num) -> {
-        String uuid = res.getString("uuid");
-        Integer ownerID = res.getInt("ownerid");
-        String title = res.getString("title");
-        Boolean isPublic = res.getBoolean("ispublic");
-        Boolean isStatic = res.getBoolean("isstatic");
-        Array fieldsNames = res.getArray("fieldsnames");
-        Array fieldsValues = res.getArray("fieldsvalues");
-        String date = res.getString("date");
-
-        return new Page(uuid, ownerID, title, isPublic, isStatic, true, (String[])fieldsNames.getArray(), (String[])fieldsValues.getArray(), date);
-    };
-
-    public static final RowMapper<Page> pageFullMapper = (res, num) -> {
-        String uuid = res.getString("uuid");
-        Integer ownerID = res.getInt("ownerid");
-        String title = res.getString("title");
-        Boolean isPublic = res.getBoolean("ispublic");
-        Boolean isStatic = res.getBoolean("isstatic");
-        Boolean isMine = res.getBoolean("ismine");
-        Array fieldsNames = res.getArray("fieldsnames");
-        Array fieldsValues = res.getArray("fieldsvalues");
-        String date = res.getString("date");
-
-        return new Page(uuid, ownerID, title, isPublic, isStatic, isMine, (String[])fieldsNames.getArray(), (String[])fieldsValues.getArray(), date);
-    };
-
-    public static final RowMapper<PageCut> pageCutMapper = (res, num) -> {
-        String uuid = res.getString("uuid");
-        String title = res.getString("title");
-        String date = res.getString("date");
-
-        return new PageCut(uuid, title, date);
-    };
+    ///////////////////////////////
 
 }
