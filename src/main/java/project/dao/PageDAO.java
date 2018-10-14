@@ -196,10 +196,10 @@ public class PageDAO {
             case "all":
                 tmpObj.add(userID);
                 tmpObj.add(userID);
-                sqlQuery = "SELECT * FROM (SELECT uuid, ownerid, title, ispublic, template, isstatic, fieldsnames, fieldsvalues, date, " +
+                sqlQuery = "SELECT * FROM (SELECT uuid, ownerid, title, ispublic, isstatic, template, fieldsnames, fieldsvalues, date, " +
                         "CASE WHEN ownerid = ? THEN true ELSE false END AS ismine " +
                         "FROM page WHERE ownerid = ? " +
-                        "UNION SELECT uuid, ownerid, title, ispublic, isstatic,template, fieldsnames, fieldsvalues, date, " +
+                        "UNION SELECT uuid, ownerid, title, ispublic, isstatic, template, fieldsnames, fieldsvalues, date, " +
                         "CASE WHEN ownerid = ? THEN true ELSE false END AS ismine " +
                         "FROM userpages JOIN page ON pageuuid = uuid WHERE userid = ?) as h";
                 break;
