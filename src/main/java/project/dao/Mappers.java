@@ -24,7 +24,8 @@ public class Mappers {
 
     public static final RowMapper<Page> pageFullMapper = (res, num) -> {
         String uuid = res.getString("uuid");
-        Integer ownerID = res.getInt("ownerid");
+//        Integer ownerID = res.getInt("ownerid");
+        Integer ownerID = 0;
         String title = res.getString("title");
         Boolean isPublic = res.getBoolean("ispublic");
         Boolean isStatic = res.getBoolean("isstatic");

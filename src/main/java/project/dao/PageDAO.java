@@ -30,17 +30,18 @@ public class PageDAO {
         try {
             template.update(con -> {
                 PreparedStatement statement = con.prepareStatement(
-                        "INSERT INTO page(uuid, ownerid, title, ispublic, isstatic, fieldsnames, fieldsvalues, date)" +
-                                " VALUES(?, ?, ?, ?, ?, ?, ?, ?)" ,
+                        "INSERT INTO page(uuid, ownerid, title, ispublic, isstatic, template, fieldsnames, fieldsvalues, date)" +
+                                " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)" ,
                         PreparedStatement.RETURN_GENERATED_KEYS);
                 statement.setString(1, body.getUuid());
                 statement.setInt(2, body.getOwnerID());
                 statement.setString(3, body.getTitle());
                 statement.setBoolean(4, body.isPublic());
                 statement.setBoolean(5, body.isStatic());
-                statement.setArray(6, con.createArrayOf("TEXT", body.getFieldsNames()));
-                statement.setArray(7, con.createArrayOf("TEXT", body.getFieldsValues()));
-                statement.setString(8, body.getDate());
+                statement.setString(6, body.getTemplate());
+                statement.setArray(7, con.createArrayOf("TEXT", body.getFieldsNames()));
+                statement.setArray(8, con.createArrayOf("TEXT", body.getFieldsValues()));
+                statement.setString(9, body.getDate());
                 return statement;
             }, keyHolder);
             result.status = HttpStatus.CREATED;
