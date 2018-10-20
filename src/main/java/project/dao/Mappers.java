@@ -2,8 +2,9 @@ package project.dao;
 
 import org.springframework.jdbc.core.RowMapper;
 import project.model.Page;
-import project.model.User;
+import project.model.UserYa;
 
+import java.math.BigDecimal;
 import java.sql.Array;
 
 public class Mappers {
@@ -38,11 +39,11 @@ public class Mappers {
         return new Page(uuid, ownerID, title, isPublic, isStatic, isMine, template, (String[])fieldsNames.getArray(), (String[])fieldsValues.getArray(), date);
     };
 
-    public static final RowMapper<User> userMapper = (res, num) -> {
-        Integer id = res.getInt("id");
+    public static final RowMapper<UserYa> userMapper = (res, num) -> {
+        BigDecimal id = res.getBigDecimal("id");
         String login = res.getString("login");
         String email = res.getString("email");
         String token = res.getString("token");
-        return new User(id, login, email, token);
+        return new UserYa(id, login, email, token);
     };
 }

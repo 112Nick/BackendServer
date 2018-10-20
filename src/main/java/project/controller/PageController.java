@@ -6,12 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import project.dao.PageDAO;
 import project.dao.UserDAO;
-import project.model.Message;
-import project.model.Page;
-import project.model.DAOResponse;
-import project.model.User;
+import project.model.*;
 
 import javax.servlet.http.HttpSession;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.UUID;
@@ -35,15 +33,14 @@ public class PageController {
     public ResponseEntity<?> createPage(@RequestBody Page body, HttpSession httpSession) {
         User user = (User) httpSession.getAttribute(SESSION_KEY);
         if (user == null) {
-             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Message("User isn't authorized"));
+             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Message("UserYa isn't authorized"));
         }
-        body.setOwnerID(user.getId());
+        body.setOwnerID(user.getId().intValue());
         UUID uuid = UUID.randomUUID();
         body.setUuid(uuid.toString());
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         Instant instant = timestamp.toInstant();
         body.setDate(instant.toString());
-        body.setOwnerID(user.getId());
         if (body.getTitle().equals("")) {
             body.setTitle("Unnamed");
         }
@@ -58,14 +55,14 @@ public class PageController {
     public ResponseEntity<?> getPage(@PathVariable("id") String pageUUID, HttpSession httpSession) {
         User user = (User) httpSession.getAttribute(SESSION_KEY);
         if (user == null) {
-            user = new User();
+            user = new UserYa();
         }
         DAOResponse<Page> daoResponse = pageDAO.getPageByID(pageUUID);
         Page requestedPage = daoResponse.body;
         if (requestedPage != null) {
-            if (requestedPage.isPublic() || requestedPage.getOwnerID() == user.getId()) {
-                if (requestedPage.getOwnerID() != user.getId()) {
-                    pageDAO.addViewedPage(user.getId(), pageUUID);
+            if (requestedPage.isPublic() || user.getId().equals(BigDecimal.valueOf(requestedPage.getOwnerID()))) {
+                if ( !user.getId().equals(BigDecimal.valueOf(requestedPage.getOwnerID()))) {
+                    pageDAO.addViewedPage(user.getId().intValue(), pageUUID);
                 }
                 requestedPage.setOwnerID(0);
                 return ResponseEntity.status(HttpStatus.OK).body(requestedPage);
@@ -82,10 +79,10 @@ public class PageController {
         DAOResponse<Page> daoResponse = pageDAO.getPageByID(pageUUID);
         Page requestedPage = daoResponse.body;
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Message("User isn't authorized"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Message("UserYa isn't authorized"));
         }
         if (requestedPage != null) {
-            if (requestedPage.getOwnerID() == user.getId()) {
+            if (user.getId().equals(BigDecimal.valueOf(requestedPage.getOwnerID()))) {
                 if (body.getTitle().equals("")) {
                     body.setTitle("Unnamed");
                 }
@@ -106,10 +103,10 @@ public class PageController {
         DAOResponse<Page> daoResponse = pageDAO.getPageByID(pageUUID);
         Page requestedPage = daoResponse.body;
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Message("User isn't authorized"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Message("UserYa isn't authorized"));
         }
         if (requestedPage != null) {
-            if (requestedPage.getOwnerID() == user.getId()) {
+            if (user.getId().equals(BigDecimal.valueOf(requestedPage.getOwnerID()))) {
                 daoResponse = pageDAO.deletePage(pageUUID);
                 if (daoResponse.status == HttpStatus.OK) {
                     pageDAO.deletePageFromViewers(pageUUID);

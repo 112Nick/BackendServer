@@ -8,7 +8,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Service;
 import project.model.Page;
 import project.model.DAOResponse;
-import project.model.User;
+import project.model.UserYa;
 
 import java.sql.PreparedStatement;
 import java.util.ArrayList;
@@ -146,8 +146,8 @@ public class PageDAO {
         return result;
     }
 
-    public DAOResponse<User> addViewedPage(Integer userID, String pageID)  {
-        DAOResponse<User> result = new DAOResponse<>();
+    public DAOResponse<UserYa> addViewedPage(Integer userID, String pageID)  {
+        DAOResponse<UserYa> result = new DAOResponse<>();
         result.body = null;
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         try {
@@ -217,7 +217,7 @@ public class PageDAO {
         }
 
         if (search != null && !search.isEmpty()) {
-            sqlQuery += " WHERE title LIKE '%" + search + "%'";
+            sqlQuery += " WHERE LOWER(title) LIKE '%" + search.toLowerCase() + "%'";
         }
 
         switch (sort) {
