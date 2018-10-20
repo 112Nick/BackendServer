@@ -40,7 +40,7 @@ public class UserController {
 
         User user = (User) httpSession.getAttribute(SESSION_KEY);
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Message("UserYa isn't authorized"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Message("User isn't authorized"));
         }
         DAOResponse<List<Page>> daoResponse = pageDAO.getUsersPages(user.getId().intValue(), sort, own, search);
         if (daoResponse.status == HttpStatus.NOT_FOUND) {
@@ -53,7 +53,7 @@ public class UserController {
     public ResponseEntity<?> getUser(HttpSession httpSession) {
         final User user = (User) httpSession.getAttribute(SESSION_KEY);
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Message("UserYa isn't authorized"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Message("User isn't authorized"));
         }
         return ResponseEntity.status(HttpStatus.OK).body(new Message(user.getDefault_email()));
     }
@@ -87,7 +87,7 @@ public class UserController {
                     DAOResponse<Integer> daoResponse1 = userDAO.getUserID(user.getDefault_email());
                     user.setId(BigDecimal.valueOf(daoResponse1.body));
                     httpSession.setAttribute(SESSION_KEY, user);
-                    return ResponseEntity.status(HttpStatus.OK).body(new Message("UserYa isn't new"));
+                    return ResponseEntity.status(HttpStatus.OK).body(new Message("Successfully authorized"));
                 }
                 user.setId(daoResponse.body.getId());
                 httpSession.setAttribute(SESSION_KEY, user);
