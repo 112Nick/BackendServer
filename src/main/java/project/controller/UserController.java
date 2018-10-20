@@ -51,7 +51,7 @@ public class UserController {
 
     @RequestMapping(path = "/getuser", method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<?> getUser(HttpSession httpSession) {
-        final UserYa user = (UserYa) httpSession.getAttribute(SESSION_KEY);
+        final User user = (User) httpSession.getAttribute(SESSION_KEY);
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Message("UserYa isn't authorized"));
         }
