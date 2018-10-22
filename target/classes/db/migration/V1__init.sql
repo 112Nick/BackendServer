@@ -18,7 +18,8 @@ CREATE TABLE IF NOT EXISTS page (
   fieldsNames TEXT[],
   fieldsValues TEXT[],
   innerPages TEXT[],
-  date TEXT
+  date TEXT,
+  standalone BOOLEAN
 );
 
 CREATE TABLE IF NOT EXISTS userPages (

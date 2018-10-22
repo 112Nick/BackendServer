@@ -31,8 +31,8 @@ public class PageDAO {
         try {
             template.update(con -> {
                 PreparedStatement statement = con.prepareStatement(
-                        "INSERT INTO page(uuid, ownerid, title, ispublic, isstatic, template, fieldsnames, fieldsvalues, date)" +
-                                " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)" ,
+                        "INSERT INTO page(uuid, ownerid, title, ispublic, isstatic, template, fieldsnames, fieldsvalues, date, standalone)" +
+                                " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" ,
                         PreparedStatement.RETURN_GENERATED_KEYS);
                 statement.setString(1, body.getUuid());
                 statement.setInt(2, body.getOwnerID());
@@ -43,6 +43,7 @@ public class PageDAO {
                 statement.setArray(7, con.createArrayOf("TEXT", body.getFieldsNames()));
                 statement.setArray(8, con.createArrayOf("TEXT", body.getFieldsValues()));
                 statement.setString(9, body.getDate());
+                statement.setBoolean(10, body.isStandalone());
                 return statement;
             }, keyHolder);
             result.status = HttpStatus.CREATED;
@@ -63,6 +64,7 @@ public class PageDAO {
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         String[] innerPagesUuids = new String[body.getInnerPages().length];
         for (int i = 0; i < body.getInnerPages().length; i++) {
+            body.getInnerPages()[i].setStandalone(false);
             createPage(body.getInnerPages()[i]);
             innerPagesUuids[i] = body.getInnerPages()[i].getUuid();
         }
@@ -70,8 +72,8 @@ public class PageDAO {
         try {
             template.update(con -> {
                 PreparedStatement statement = con.prepareStatement(
-                        "INSERT INTO page(uuid, ownerid, title, ispublic, isstatic, template, fieldsnames, fieldsvalues, innerPages, date)" +
-                                " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" ,
+                        "INSERT INTO page(uuid, ownerid, title, ispublic, isstatic, template, fieldsnames, fieldsvalues, innerPages, date, standalone)" +
+                                " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" ,
                         PreparedStatement.RETURN_GENERATED_KEYS);
                 statement.setString(1, body.getUuid());
                 statement.setInt(2, body.getOwnerID());
@@ -83,6 +85,7 @@ public class PageDAO {
                 statement.setArray(8, con.createArrayOf("TEXT",  new Object[1]));
                 statement.setArray(9, con.createArrayOf("TEXT", innerPagesUuids));
                 statement.setString(10, body.getDate());
+                statement.setBoolean(11, body.isStandalone());
                 return statement;
             }, keyHolder);
             result.status = HttpStatus.CREATED;
@@ -340,35 +343,35 @@ public class PageDAO {
 
         switch(own) {
             case "me":
-                sqlQuery = "SELECT uuid, ownerid, title, ispublic, isstatic, template, fieldsnames, fieldsvalues, date, " +
+                sqlQuery = "SELECT uuid, ownerid, title, ispublic, isstatic, template, fieldsnames, fieldsvalues, date, standalone, " +
                         "CASE WHEN ownerid = ? THEN true ELSE false END AS ismine " +
-                        "FROM page WHERE ownerid = ?";
+                        "FROM page WHERE ownerid = ? AND standalone = true";
                 break;
             case "others":
-                sqlQuery = "SELECT uuid, ownerid, title, ispublic, isstatic, template, fieldsnames, fieldsvalues, date, " +
+                sqlQuery = "SELECT uuid, ownerid, title, ispublic, isstatic, template, fieldsnames, fieldsvalues, date, standalone, " +
                         "CASE WHEN ownerid = ? THEN true ELSE false END AS ismine " +
-                        "FROM userpages JOIN page ON pageuuid = uuid WHERE userid = ? ";
+                        "FROM userpages JOIN page ON pageuuid = uuid WHERE userid = ? AND standalone = true";
 
                 break;
             case "all":
                 tmpObj.add(userID);
                 tmpObj.add(userID);
-                sqlQuery = "SELECT * FROM (SELECT uuid, ownerid, title, ispublic, isstatic, template, fieldsnames, fieldsvalues, date, " +
+                sqlQuery = "SELECT * FROM (SELECT uuid, ownerid, title, ispublic, isstatic, template, fieldsnames, fieldsvalues, date, standalone, " +
                         "CASE WHEN ownerid = ? THEN true ELSE false END AS ismine " +
-                        "FROM page WHERE ownerid = ? " +
-                        "UNION SELECT uuid, ownerid, title, ispublic, isstatic, template, fieldsnames, fieldsvalues, date, " +
+                        "FROM page WHERE ownerid = ? AND standalone = true " +
+                        "UNION SELECT uuid, ownerid, title, ispublic, isstatic, template, fieldsnames, fieldsvalues, date, standalone, " +
                         "CASE WHEN ownerid = ? THEN true ELSE false END AS ismine " +
-                        "FROM userpages JOIN page ON pageuuid = uuid WHERE userid = ?) as h";
+                        "FROM userpages JOIN page ON pageuuid = uuid WHERE userid = ? AND standalone = true) as h";
                 break;
             default:
                 tmpObj.add(userID);
                 tmpObj.add(userID);
-                sqlQuery = "SELECT * FROM (SELECT uuid, ownerid, title, ispublic, isstatic, template, fieldsnames, fieldsvalues, date, " +
+                sqlQuery = "SELECT * FROM (SELECT uuid, ownerid, title, ispublic, isstatic, template, fieldsnames, fieldsvalues, date, standalone, " +
                         "CASE WHEN ownerid = ? THEN true ELSE false END AS ismine  " +
-                        "FROM page WHERE ownerid = ? " +
-                        "UNION SELECT uuid, ownerid, title, ispublic, isstatic, template, fieldsnames, fieldsvalues, date, " +
+                        "FROM page WHERE ownerid = ? AND standalone = true " +
+                        "UNION SELECT uuid, ownerid, title, ispublic, isstatic, template, fieldsnames, fieldsvalues, date, standalone,  " +
                         "CASE WHEN ownerid = ? THEN true ELSE false END AS ismine " +
-                        "FROM userpages JOIN page ON pageuuid = uuid WHERE userid = ?) as h";
+                        "FROM userpages JOIN page ON pageuuid = uuid WHERE userid = ? AND standalone = true) as h";
                 break;
         }
 

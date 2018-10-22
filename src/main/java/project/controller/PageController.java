@@ -42,6 +42,7 @@ public class PageController {
         if (user == null) {
              return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Message("UserYa isn't authorized"));
         }
+        body.setStandalone(true);
         body.setOwnerID(user.getId().intValue());
         UUID uuid = UUID.randomUUID();
         body.setUuid(uuid.toString());
@@ -66,8 +67,9 @@ public class PageController {
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Message("UserYa isn't authorized"));
         }
+        body.setStandalone(true);
         body.setOwnerID(user.getId().intValue());
-        UUID uuid = UUID.randomUUID(); // TODO + CONTAINER
+        UUID uuid = UUID.randomUUID();
         Random r = new Random();
         body.setUuid(uuid.toString() + alphabet.charAt(r.nextInt(N)));
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
@@ -171,19 +173,18 @@ public class PageController {
                 if (body.getTitle().equals("")) {
                     body.setTitle("Unnamed");
                 }
+                body.setDate(requestedPage.getDate());
                 body.setOwnerID(user.getId().intValue());
                 body.setUuid(pageUUID);
                 for (int i = 0; i < requestedPage.getInnerPagesUuids().length; i++) {
                     pageDAO.deletePage(requestedPage.getInnerPagesUuids()[i]);
                 }
                 pageDAO.deletePageContainer(pageUUID);
-                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-                Instant instant = timestamp.toInstant();
                 for (int i = 0; i < body.getInnerPages().length; i++) {
                     UUID uuid = UUID.randomUUID();
 
                     body.getInnerPages()[i].setUuid(uuid.toString());
-                    body.getInnerPages()[i].setDate(instant.toString());
+                    body.getInnerPages()[i].setDate(body.getDate());
                     body.getInnerPages()[i].setOwnerID(user.getId().intValue());
                     if ( body.getInnerPages()[i].getTitle().equals("")) {
                         body.getInnerPages()[i].setTitle("Unnamed1");

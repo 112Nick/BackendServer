@@ -14,6 +14,8 @@ public class PageContainer {
     private Page[] innerPages;
     private String[] innerPagesUuids;
     private String date;
+    private boolean standalone;
+
 
 
     public PageContainer() {
@@ -40,6 +42,7 @@ public class PageContainer {
         this.template = template;
         this.innerPages = innerPages;
         this.date = date;
+        this.standalone = true;
     }
 
 //    @JsonCreator
@@ -61,6 +64,7 @@ public class PageContainer {
         this.template = template;
         this.innerPagesUuids = innerPagesUuids;
         this.date = date;
+        this.standalone = true;
     }
 
 
@@ -143,6 +147,14 @@ public class PageContainer {
 
     public void setInnerPagesUuids(String[] innerPagesUuids) {
         this.innerPagesUuids = innerPagesUuids;
+    }
+
+    public boolean isStandalone() {
+        return standalone;
+    }
+
+    public void setStandalone(boolean standalone) {
+        this.standalone = standalone;
     }
 
 }

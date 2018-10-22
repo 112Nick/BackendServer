@@ -11,6 +11,7 @@ public class Page {
     private boolean isPublic;
     private boolean isStatic;
     private boolean isMine;
+    private boolean standalone;
     private String template;
     private String[] fieldsNames;
     private String[] fieldsValues;
@@ -19,6 +20,7 @@ public class Page {
 
     public Page() {
         this.title = "JustCreated";
+        this.standalone = false;
     }
 
 
@@ -43,6 +45,8 @@ public class Page {
         this.fieldsNames = fieldsNames;
         this.fieldsValues = fieldsValues;
         this.date = date;
+        this.standalone = false;
+
     }
 
     public String getTemplate() {
@@ -124,5 +128,14 @@ public class Page {
     public void setFieldsValues(String[] fieldsValues) {
         this.fieldsValues = fieldsValues;
     }
+
+    public boolean isStandalone() {
+        return standalone;
+    }
+
+    public void setStandalone(boolean standalone) {
+        this.standalone = standalone;
+    }
+
 
 }
