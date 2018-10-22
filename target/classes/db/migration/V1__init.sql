@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS page (
   template TEXT,
   fieldsNames TEXT[],
   fieldsValues TEXT[],
+  innerPages TEXT[],
   date TEXT
 );
 

@@ -61,6 +61,8 @@ public class PageController {
     @RequestMapping(path = "/container/create", method = RequestMethod.POST, produces = "application/json")
     public ResponseEntity<?> createPageContainer(@RequestBody PageContainer body, HttpSession httpSession) {
         User user = (User) httpSession.getAttribute(SESSION_KEY);
+        System.out.println("IN CONTAINER CREATE");
+
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Message("UserYa isn't authorized"));
         }
@@ -116,7 +118,7 @@ public class PageController {
                 if (requestedPage.isPublic() || user.getId().equals(BigDecimal.valueOf(requestedPage.getOwnerID()))) {
                     if ( !user.getId().equals(BigDecimal.valueOf(requestedPage.getOwnerID()))) {
                         pageDAO.addViewedPage(user.getId().intValue(), pageUUID);
-                        System.out.println("container");
+                        System.out.println("1");
                     }
                     requestedPage.setOwnerID(0);
                     return ResponseEntity.status(HttpStatus.OK).body(requestedPage);
@@ -157,6 +159,7 @@ public class PageController {
     @RequestMapping(path = "/container/{id}/edit", method = RequestMethod.POST, produces = "application/json")
     public ResponseEntity<?> editPageContainer(@RequestBody PageContainer body, @PathVariable("id") String pageUUID, HttpSession httpSession) {
         User user = (User) httpSession.getAttribute(SESSION_KEY);
+        System.out.println("IN CONTAINER EDUT");
         DAOResponse<PageContainer> daoResponse = pageDAO.getPageContainerByID(pageUUID);
         PageContainer requestedPage = daoResponse.body;
         if (user == null) {
@@ -171,6 +174,7 @@ public class PageController {
                     if ( body.getInnerPages()[i].getTitle().equals("")) {
                         body.getInnerPages()[i].setTitle("Unnamed");
                     }
+                    body.setInnerPagesUuids(requestedPage.getInnerPagesUuids());
                 }
                 daoResponse = pageDAO.editPageContainer(body, pageUUID);
                 if (daoResponse.status == HttpStatus.OK) {

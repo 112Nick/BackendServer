@@ -42,16 +42,16 @@ public class PageContainer {
         this.date = date;
     }
 
-    @JsonCreator
-    public PageContainer( @JsonProperty("uuid") String uuid,
-                          @JsonProperty("ownerID") int ownerID,
-                          @JsonProperty("title") String title,
-                          @JsonProperty("isPublic") boolean isPublic,
-                          @JsonProperty("isStatic") boolean isStatic,
-                          @JsonProperty("isMine") boolean isMine,
-                          @JsonProperty("template") String template,
-                          @JsonProperty("innerPagesUids") String[] innerPagesUuids,
-                          @JsonProperty("date") String date) {
+//    @JsonCreator
+    public PageContainer( String uuid,
+                         int ownerID,
+                          String title,
+                          boolean isPublic,
+                          boolean isStatic,
+                          boolean isMine,
+                           String template,
+                          String[] innerPagesUuids,
+                           String date) {
         this.uuid = uuid;
         this.ownerID = ownerID;
         this.title = title;

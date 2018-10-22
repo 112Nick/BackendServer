@@ -17,7 +17,7 @@ public class Mappers {
         Boolean isPublic = res.getBoolean("ispublic");
         Boolean isStatic = res.getBoolean("isstatic");
         String template = res.getString("template");
-        Array innerPagesuids = res.getArray("innerPagesUuids");
+        Array innerPagesuids = res.getArray("innerpages");
         String date = res.getString("date");
         return new PageContainer(uuid, ownerID, title, isPublic, isStatic, true, template, (String[])innerPagesuids.getArray(), date);
     };

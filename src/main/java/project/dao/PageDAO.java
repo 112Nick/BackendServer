@@ -70,8 +70,8 @@ public class PageDAO {
         try {
             template.update(con -> {
                 PreparedStatement statement = con.prepareStatement(
-                        "INSERT INTO page(uuid, ownerid, title, ispublic, isstatic, template, innerPages, date)" +
-                                " VALUES(?, ?, ?, ?, ?, ?, ?, ?)" ,
+                        "INSERT INTO page(uuid, ownerid, title, ispublic, isstatic, template, fieldsnames, fieldsvalues, innerPages, date)" +
+                                " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" ,
                         PreparedStatement.RETURN_GENERATED_KEYS);
                 statement.setString(1, body.getUuid());
                 statement.setInt(2, body.getOwnerID());
@@ -79,8 +79,10 @@ public class PageDAO {
                 statement.setBoolean(4, body.isPublic());
                 statement.setBoolean(5, body.isStatic());
                 statement.setString(6, body.getTemplate());
-                statement.setArray(7, con.createArrayOf("TEXT", innerPagesUuids));
-                statement.setString(8, body.getDate());
+                statement.setArray(7, con.createArrayOf("TEXT", new Object[1]));
+                statement.setArray(8, con.createArrayOf("TEXT",  new Object[1]));
+                statement.setArray(9, con.createArrayOf("TEXT", innerPagesUuids));
+                statement.setString(10, body.getDate());
                 return statement;
             }, keyHolder);
             result.status = HttpStatus.CREATED;
@@ -114,13 +116,18 @@ public class PageDAO {
 
     public DAOResponse<PageContainer> getPageContainerByID(String pageContainerUUID) {
         DAOResponse<PageContainer> result = new DAOResponse<>();
+        System.out.println(pageContainerUUID);
         try {
             final PageContainer foundPageContainer =  template.queryForObject(
                     "SELECT * FROM page WHERE uuid = ?",
                     new Object[]{pageContainerUUID},  Mappers.pageContainerMapper);
+            Page[] innerPages = new Page[foundPageContainer.getInnerPagesUuids().length];
             for(int i = 0; i < foundPageContainer.getInnerPagesUuids().length; i++) {
-                foundPageContainer.getInnerPages()[i] = getPageByID(foundPageContainer.getInnerPagesUuids()[i]).body;
+                innerPages[i] = getPageByID(foundPageContainer.getInnerPagesUuids()[i]).body;
+//                System.out.println(getPageByID(foundPageContainer.getInnerPagesUuids()[i]).body.);
             }
+            foundPageContainer.setInnerPages(innerPages);
+
             result.body = foundPageContainer;
             result.status = HttpStatus.OK;
         }
@@ -182,15 +189,13 @@ public class PageDAO {
                         "UPDATE page SET " +
                                 " title = ?," +
                                 " ispublic = ?, " +
-                                " isstatic = ?, " +
-                                " innerPages = ?, " +
+                                " innerPages = ? " +
                                 "WHERE uuid = ?",
                         PreparedStatement.RETURN_GENERATED_KEYS);
                 statement.setString(1 , body.getTitle());
                 statement.setBoolean(2, body.isPublic());
-                statement.setBoolean(3, body.isStatic());
-                statement.setArray(4, con.createArrayOf("TEXT", innerPagesUuids));
-                statement.setString(5, pageContainerUUID);
+                statement.setArray(3, con.createArrayOf("TEXT", innerPagesUuids));
+                statement.setString(4, pageContainerUUID);
                 return statement;
             }, keyHolder);
             result.status = HttpStatus.OK;
