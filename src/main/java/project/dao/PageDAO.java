@@ -122,11 +122,15 @@ public class PageDAO {
                     "SELECT * FROM page WHERE uuid = ?",
                     new Object[]{pageContainerUUID},  Mappers.pageContainerMapper);
             Page[] innerPages = new Page[foundPageContainer.getInnerPagesUuids().length];
+            String[] innerPagesUuids = new String[foundPageContainer.getInnerPagesUuids().length];
             for(int i = 0; i < foundPageContainer.getInnerPagesUuids().length; i++) {
                 innerPages[i] = getPageByID(foundPageContainer.getInnerPagesUuids()[i]).body;
-//                System.out.println(getPageByID(foundPageContainer.getInnerPagesUuids()[i]).body.);
+                innerPagesUuids[i] = innerPages[i].getUuid();
+                System.out.println(innerPages[i].getUuid());
             }
+
             foundPageContainer.setInnerPages(innerPages);
+            foundPageContainer.setInnerPagesUuids(innerPagesUuids);
 
             result.body = foundPageContainer;
             result.status = HttpStatus.OK;
@@ -178,8 +182,14 @@ public class PageDAO {
         result.body = null;
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         String[] innerPagesUuids = new String[body.getInnerPages().length];
+        DAOResponse<Page> daoResponse;
         for (int i = 0; i < body.getInnerPages().length; i++) {
-            editPage(body.getInnerPages()[i], body.getInnerPages()[i].getUuid());
+            daoResponse = getPageByID(body.getInnerPagesUuids()[i]);
+            if (daoResponse.status == HttpStatus.NOT_FOUND || daoResponse.body == null) {
+                createPage(body.getInnerPages()[i]);
+            } else {
+                editPage(body.getInnerPages()[i], body.getInnerPages()[i].getUuid());
+            }
             innerPagesUuids[i] = body.getInnerPages()[i].getUuid();
         }
 

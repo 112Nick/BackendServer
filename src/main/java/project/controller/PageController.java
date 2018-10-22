@@ -80,6 +80,7 @@ public class PageController {
             UUID uuid1 = UUID.randomUUID();
             body.getInnerPages()[i].setUuid(uuid1.toString());
             body.getInnerPages()[i].setDate(instant.toString());
+            body.getInnerPages()[i].setOwnerID(user.getId().intValue());
             if ( body.getInnerPages()[i].getTitle().equals("")) {
                 body.getInnerPages()[i].setTitle("Unnamed");
             }
@@ -159,7 +160,7 @@ public class PageController {
     @RequestMapping(path = "/container/{id}/edit", method = RequestMethod.POST, produces = "application/json")
     public ResponseEntity<?> editPageContainer(@RequestBody PageContainer body, @PathVariable("id") String pageUUID, HttpSession httpSession) {
         User user = (User) httpSession.getAttribute(SESSION_KEY);
-        System.out.println("IN CONTAINER EDUT");
+        System.out.println("IN CONTAINER EDIT");
         DAOResponse<PageContainer> daoResponse = pageDAO.getPageContainerByID(pageUUID);
         PageContainer requestedPage = daoResponse.body;
         if (user == null) {
@@ -170,13 +171,25 @@ public class PageController {
                 if (body.getTitle().equals("")) {
                     body.setTitle("Unnamed");
                 }
-                for (int i = 0; i < body.getInnerPages().length; i++) {
-                    if ( body.getInnerPages()[i].getTitle().equals("")) {
-                        body.getInnerPages()[i].setTitle("Unnamed");
-                    }
-                    body.setInnerPagesUuids(requestedPage.getInnerPagesUuids());
+                body.setOwnerID(user.getId().intValue());
+                body.setUuid(pageUUID);
+                for (int i = 0; i < requestedPage.getInnerPagesUuids().length; i++) {
+                    pageDAO.deletePage(requestedPage.getInnerPagesUuids()[i]);
                 }
-                daoResponse = pageDAO.editPageContainer(body, pageUUID);
+                pageDAO.deletePageContainer(pageUUID);
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                Instant instant = timestamp.toInstant();
+                for (int i = 0; i < body.getInnerPages().length; i++) {
+                    UUID uuid = UUID.randomUUID();
+
+                    body.getInnerPages()[i].setUuid(uuid.toString());
+                    body.getInnerPages()[i].setDate(instant.toString());
+                    body.getInnerPages()[i].setOwnerID(user.getId().intValue());
+                    if ( body.getInnerPages()[i].getTitle().equals("")) {
+                        body.getInnerPages()[i].setTitle("Unnamed1");
+                    }
+                }
+                pageDAO.createPageContainer(body);
                 if (daoResponse.status == HttpStatus.OK) {
                     return ResponseEntity.status(HttpStatus.OK).body(new Message("Successfully edited"));
                 }
