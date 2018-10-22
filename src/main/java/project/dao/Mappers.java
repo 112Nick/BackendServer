@@ -2,12 +2,25 @@ package project.dao;
 
 import org.springframework.jdbc.core.RowMapper;
 import project.model.Page;
+import project.model.PageContainer;
 import project.model.UserYa;
 
 import java.math.BigDecimal;
 import java.sql.Array;
 
 public class Mappers {
+
+    public static final RowMapper<PageContainer> pageContainerMapper = (res, num) -> {
+        String uuid = res.getString("uuid");
+        Integer ownerID = res.getInt("ownerid");
+        String title = res.getString("title");
+        Boolean isPublic = res.getBoolean("ispublic");
+        Boolean isStatic = res.getBoolean("isstatic");
+        String template = res.getString("template");
+        Array innerPagesuids = res.getArray("innerPagesUuids");
+        String date = res.getString("date");
+        return new PageContainer(uuid, ownerID, title, isPublic, isStatic, true, template, (String[])innerPagesuids.getArray(), date);
+    };
 
     public static final RowMapper<Page> pageMapper = (res, num) -> {
         String uuid = res.getString("uuid");

@@ -8,6 +8,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Service;
 import project.model.Page;
 import project.model.DAOResponse;
+import project.model.PageContainer;
 import project.model.UserYa;
 
 import java.sql.PreparedStatement;
@@ -55,6 +56,44 @@ public class PageDAO {
 
     }
 
+
+    public DAOResponse<PageContainer> createPageContainer(PageContainer body) {
+        DAOResponse<PageContainer> result = new DAOResponse<>();
+        result.body = null;
+        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+        String[] innerPagesUuids = new String[body.getInnerPages().length];
+        for (int i = 0; i < body.getInnerPages().length; i++) {
+            createPage(body.getInnerPages()[i]);
+            innerPagesUuids[i] = body.getInnerPages()[i].getUuid();
+        }
+
+        try {
+            template.update(con -> {
+                PreparedStatement statement = con.prepareStatement(
+                        "INSERT INTO pageContainer(uuid, ownerid, title, ispublic, isstatic, template, innerPages, date)" +
+                                " VALUES(?, ?, ?, ?, ?, ?, ?, ?)" ,
+                        PreparedStatement.RETURN_GENERATED_KEYS);
+                statement.setString(1, body.getUuid());
+                statement.setInt(2, body.getOwnerID());
+                statement.setString(3, body.getTitle());
+                statement.setBoolean(4, body.isPublic());
+                statement.setBoolean(5, body.isStatic());
+                statement.setString(6, body.getTemplate());
+                statement.setArray(7, con.createArrayOf("TEXT", innerPagesUuids));
+                statement.setString(8, body.getDate());
+                return statement;
+            }, keyHolder);
+            result.status = HttpStatus.CREATED;
+            return result;
+        }
+        catch (DuplicateKeyException e) {
+            e.printStackTrace();
+            result.status = HttpStatus.CONFLICT;
+        }
+        return result;
+
+    }
+
     public DAOResponse<Page> getPageByID(String pageUUID) {
         DAOResponse<Page> result = new DAOResponse<>();
         try {
@@ -62,6 +101,27 @@ public class PageDAO {
                     "SELECT * FROM page WHERE uuid = ?",
                     new Object[]{pageUUID},  Mappers.pageMapper);
             result.body = foundPage;
+            result.status = HttpStatus.OK;
+        }
+        catch (DataAccessException e) {
+            e.printStackTrace();
+            result.body = null;
+            result.status = HttpStatus.NOT_FOUND;
+        }
+        return result;
+
+    }
+
+    public DAOResponse<PageContainer> getPageContainerByID(String pageContainerUUID) {
+        DAOResponse<PageContainer> result = new DAOResponse<>();
+        try {
+            final PageContainer foundPageContainer =  template.queryForObject(
+                    "SELECT * FROM pageContainer WHERE uuid = ?",
+                    new Object[]{pageContainerUUID},  Mappers.pageContainerMapper);
+            for(int i = 0; i < foundPageContainer.getInnerPagesUuids().length; i++) {
+                foundPageContainer.getInnerPages()[i] = getPageByID(foundPageContainer.getInnerPagesUuids()[i]).body;
+            }
+            result.body = foundPageContainer;
             result.status = HttpStatus.OK;
         }
         catch (DataAccessException e) {
@@ -105,6 +165,45 @@ public class PageDAO {
         return result;
     }
 
+
+    public DAOResponse<PageContainer> editPageContainer(PageContainer body, String pageContainerUUID) {
+        DAOResponse<PageContainer> result = new DAOResponse<>();
+        result.body = null;
+        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+        String[] innerPagesUuids = new String[body.getInnerPages().length];
+        for (int i = 0; i < body.getInnerPages().length; i++) {
+            editPage(body.getInnerPages()[i], body.getInnerPages()[i].getUuid());
+            innerPagesUuids[i] = body.getInnerPages()[i].getUuid();
+        }
+
+        try {
+            template.update(con -> {
+                PreparedStatement statement = con.prepareStatement(
+                        "UPDATE pageContainer SET " +
+                                " title = ?," +
+                                " ispublic = ?, " +
+                                " isstatic = ?, " +
+                                " innerPages = ?, " +
+                                "WHERE uuid = ?",
+                        PreparedStatement.RETURN_GENERATED_KEYS);
+                statement.setString(1 , body.getTitle());
+                statement.setBoolean(2, body.isPublic());
+                statement.setBoolean(3, body.isStatic());
+                statement.setArray(4, con.createArrayOf("TEXT", innerPagesUuids));
+                statement.setString(5, pageContainerUUID);
+                return statement;
+            }, keyHolder);
+            result.status = HttpStatus.OK;
+        } catch(DuplicateKeyException e){
+            e.printStackTrace();
+            result.status = HttpStatus.CONFLICT;
+        }
+        return result;
+
+    }
+
+
+
     public DAOResponse<Page> deletePage(String pageUUID) {
         DAOResponse<Page> result = new DAOResponse<>();
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
@@ -116,6 +215,27 @@ public class PageDAO {
                     statement.setString(1 , pageUUID);
                     return statement;
                     }, keyHolder);
+            result.status = HttpStatus.OK;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            result.status = HttpStatus.NOT_FOUND;
+        }
+        return result;
+
+    }
+
+    public DAOResponse<PageContainer> deletePageContainer(String pageUUID) {
+        DAOResponse<PageContainer> result = new DAOResponse<>();
+        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+        try {
+            template.update(con -> {
+                PreparedStatement statement = con.prepareStatement(
+                        "DELETE FROM pagecontainer WHERE uuid = ?",
+                        PreparedStatement.RETURN_GENERATED_KEYS);
+                statement.setString(1 , pageUUID);
+                return statement;
+            }, keyHolder);
             result.status = HttpStatus.OK;
         }
         catch (Exception e) {
@@ -166,6 +286,27 @@ public class PageDAO {
         }
         return result;
     }
+
+//    public DAOResponse<UserYa> addViewedPageContainer(Integer userID, String pageID)  {
+//        DAOResponse<UserYa> result = new DAOResponse<>();
+//        result.body = null;
+//        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+//        try {
+//            template.update(con -> {
+//                PreparedStatement statement = con.prepareStatement(
+//                        "INSERT INTO userpagecontainers(userid, pageuuid)" + " VALUES(?, ?)" ,
+//                        PreparedStatement.RETURN_GENERATED_KEYS);
+//                statement.setInt(1, userID);
+//                statement.setString(2, pageID);
+//                return statement;
+//            }, keyHolder);
+//            result.status = HttpStatus.CREATED;
+//        }
+//        catch (DuplicateKeyException e) {
+//            result.status = HttpStatus.CONFLICT;
+//        }
+//        return result;
+//    }
 
 
     public DAOResponse<List<Page>> getUsersPages(Integer userID, String sort, String own, String search) {
