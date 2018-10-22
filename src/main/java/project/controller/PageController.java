@@ -58,7 +58,7 @@ public class PageController {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Message("Something went wrong"));
     }
 
-    @RequestMapping(path = "container/create", method = RequestMethod.POST, produces = "application/json")
+    @RequestMapping(path = "/container/create", method = RequestMethod.POST, produces = "application/json")
     public ResponseEntity<?> createPageContainer(@RequestBody PageContainer body, HttpSession httpSession) {
         User user = (User) httpSession.getAttribute(SESSION_KEY);
         if (user == null) {
@@ -154,7 +154,7 @@ public class PageController {
         return  ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Requested page isn't found"));
     }
 
-    @RequestMapping(path = "container/{id}/edit", method = RequestMethod.POST, produces = "application/json")
+    @RequestMapping(path = "/container/{id}/edit", method = RequestMethod.POST, produces = "application/json")
     public ResponseEntity<?> editPageContainer(@RequestBody PageContainer body, @PathVariable("id") String pageUUID, HttpSession httpSession) {
         User user = (User) httpSession.getAttribute(SESSION_KEY);
         DAOResponse<PageContainer> daoResponse = pageDAO.getPageContainerByID(pageUUID);
