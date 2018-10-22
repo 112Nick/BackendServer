@@ -70,7 +70,7 @@ public class PageDAO {
         try {
             template.update(con -> {
                 PreparedStatement statement = con.prepareStatement(
-                        "INSERT INTO pageContainer(uuid, ownerid, title, ispublic, isstatic, template, innerPages, date)" +
+                        "INSERT INTO page(uuid, ownerid, title, ispublic, isstatic, template, innerPages, date)" +
                                 " VALUES(?, ?, ?, ?, ?, ?, ?, ?)" ,
                         PreparedStatement.RETURN_GENERATED_KEYS);
                 statement.setString(1, body.getUuid());
@@ -116,7 +116,7 @@ public class PageDAO {
         DAOResponse<PageContainer> result = new DAOResponse<>();
         try {
             final PageContainer foundPageContainer =  template.queryForObject(
-                    "SELECT * FROM pageContainer WHERE uuid = ?",
+                    "SELECT * FROM page WHERE uuid = ?",
                     new Object[]{pageContainerUUID},  Mappers.pageContainerMapper);
             for(int i = 0; i < foundPageContainer.getInnerPagesUuids().length; i++) {
                 foundPageContainer.getInnerPages()[i] = getPageByID(foundPageContainer.getInnerPagesUuids()[i]).body;
@@ -179,7 +179,7 @@ public class PageDAO {
         try {
             template.update(con -> {
                 PreparedStatement statement = con.prepareStatement(
-                        "UPDATE pageContainer SET " +
+                        "UPDATE page SET " +
                                 " title = ?," +
                                 " ispublic = ?, " +
                                 " isstatic = ?, " +
@@ -231,7 +231,7 @@ public class PageDAO {
         try {
             template.update(con -> {
                 PreparedStatement statement = con.prepareStatement(
-                        "DELETE FROM pagecontainer WHERE uuid = ?",
+                        "DELETE FROM page WHERE uuid = ?",
                         PreparedStatement.RETURN_GENERATED_KEYS);
                 statement.setString(1 , pageUUID);
                 return statement;
