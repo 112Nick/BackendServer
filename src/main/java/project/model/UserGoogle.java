@@ -10,18 +10,21 @@ public class UserGoogle implements User{
     private String given_name;
     private String email;
     private String token;
+    private String[] devices;
 
     @JsonCreator
     public UserGoogle(
             @JsonProperty("id") BigDecimal id,
             @JsonProperty("given_name") String given_name,
             @JsonProperty("email") String email,
-            @JsonProperty("token") String token
+            @JsonProperty("token") String token,
+            @JsonProperty("devices") String[] devices
     ) {
         this.id = id;
         this.given_name = given_name;
         this.email = email;
         this.token = token;
+        this.devices = devices;
     }
 
 
@@ -31,6 +34,7 @@ public class UserGoogle implements User{
         this.given_name = "created";
         this.email = "created";
         this.token = "created";
+        this.devices = new String[5];
     }
 
     @Override
@@ -71,6 +75,16 @@ public class UserGoogle implements User{
 
     public String getToken() {
         return token;
+    }
+
+    @Override
+    public String[] getDevices() {
+        return this.devices;
+    }
+
+    @Override
+    public void setDevices(String[] devices) {
+        this.devices = devices;
     }
 
     public void setToken(String token) {

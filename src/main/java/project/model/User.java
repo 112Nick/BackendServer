@@ -14,6 +14,10 @@ public interface User {
 
     String getToken();
 
+    String[] getDevices();
+
+    void setDevices(String[] devices);
+
     void setId(BigDecimal id);
 
 }

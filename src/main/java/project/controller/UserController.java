@@ -2,6 +2,12 @@ package project.controller;
 
 
 import com.google.gson.Gson;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
 import project.dao.PageDAO;
 import project.dao.UserDAO;
 import project.model.*;
@@ -145,6 +151,90 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Message("Try another service to login 2"));
         }
     }
+
+    @RequestMapping(path = "/setdevice", method = RequestMethod.POST, produces = "application/json")
+    public ResponseEntity<?> setDevice(@RequestBody Token token, HttpSession httpSession) {
+        final User user = (User) httpSession.getAttribute(SESSION_KEY);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Message("User isn't authorized"));
+        }
+        Integer userID = userDAO.getUserID(user.getEmail()).body;
+        String[] userDevices = userDAO.getUserDevicesById(userID).body;
+        String[] newUserDevices = new String[userDevices.length + 1];
+        for (int i = 0 ; i < userDevices.length; i++) {
+            newUserDevices[i] = userDevices[i];
+        }
+        newUserDevices[newUserDevices.length - 1] = token.getToken();
+        DAOResponse<Integer> daoResponse = userDAO.setDevices(newUserDevices, userID);
+        if (daoResponse.status == HttpStatus.OK) {
+            return ResponseEntity.status(HttpStatus.OK).body(new Message("OK"));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Message("Something went wrong"));
+    }
+
+
+    @RequestMapping(path = "/push/{id}/{key}", method = RequestMethod.GET, produces = "application/json")
+    public ResponseEntity<?> pushNotification(@PathVariable("id") String pageUUID, @PathVariable("key") String key,  HttpSession httpSession) {
+        System.out.println("push");
+        String myKey = key;
+        DAOResponse<Page> daoResponse = pageDAO.getPageByID(pageUUID);
+        if (daoResponse.status != HttpStatus.OK) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("No such page"));
+        }
+        String[] userDevices = userDAO.getUserDevicesById(daoResponse.body.getOwnerID()).body;
+
+        String title = "\"" + daoResponse.body.getFieldsValues()[0] + "\",";
+        String message = "\"" + daoResponse.body.getFieldsValues()[1] + "\",";
+        String devices = "";
+        for (int i = 0; i < userDevices.length; i++) {
+            devices += "\"" + userDevices[i] + "\", ";
+        }
+        devices = devices.substring(0, devices.length()-2);
+        System.out.println(devices);
+
+//        String body = "{" +
+//                "\"notification\": {" +
+//                "\"title\": \"ТЕСТ\"," +
+//                "\"body\": \"Начало в 21:00\"," +
+//                "\"icon\": \"https://eralash.ru.rsz.io/sites/all/themes/eralash_v5/logo.png?width=40&height=40\"," +
+//                "\"click_action\": \"http://eralash.ru/\" }," +
+//                "\"registration_ids\": [" +
+//                "\"eBdi1qEI2p0:APA91bEFChx2F6HnxDyxYwtXflkf-TMvpm2S-sq6iamAXr_3k5-CZTRsiTXK3Ymx8WtTCVOg9tDm7bxrH1atUcjpXLCWZlkwANFekkOmik4Fw8r17WWXotcsFqdROj1NDeZmj2S4tF1u\"" +
+//                "] " +
+//                "}";
+
+        String body = "{" +
+                "\"notification\": {" +
+                "\"title\":" + title +
+                "\"body\":" + message +
+                "\"icon\": \"https://eralash.ru.rsz.io/sites/all/themes/eralash_v5/logo.png?width=40&height=40\"," +
+                "\"click_action\": \"http://eralash.ru/\" }," +
+                "\"registration_ids\":" + "[" + devices + "]" +
+                "}";
+
+
+        StringEntity entity = new StringEntity(body,
+                ContentType.APPLICATION_FORM_URLENCODED);
+        HttpClient httpClient = HttpClientBuilder.create().build();
+        HttpPost request = new HttpPost("https://fcm.googleapis.com/fcm/send");
+        request.setHeader("Authorization", myKey);
+        request.setHeader("Content-Type", "application/json");
+        request.setEntity(entity);
+        try {
+            HttpResponse response = httpClient.execute(request);
+            System.out.println(response.getStatusLine().getStatusCode());
+            if (response.getStatusLine().getStatusCode() == 200) {
+                return ResponseEntity.status(HttpStatus.CREATED).body(new Message("Successfully notified"));
+            }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Message("Oops, try again"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Message("Oops, something went wrong"));
+        }
+    }
+
+
+
 
     @RequestMapping(path = "/logout", method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<?> logoutUser(HttpSession httpSession) {

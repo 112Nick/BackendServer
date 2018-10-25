@@ -4,7 +4,8 @@ CREATE TABLE "user" (
   id SERIAL PRIMARY KEY,
   login TEXT,
   email TEXT UNIQUE,
-  token CITEXT
+  token CITEXT,
+  devices TEXT[]
 
 );
 

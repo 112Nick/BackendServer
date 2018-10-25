@@ -10,19 +10,21 @@ public class UserYa implements User{
     private String login;
     private String default_email;
     private String token;
-
+    private String[] devices;
 
     @JsonCreator
     public UserYa(
             @JsonProperty("id") BigDecimal id,
             @JsonProperty("login") String login,
             @JsonProperty("default_email") String default_email,
-            @JsonProperty("token") String token
+            @JsonProperty("token") String token,
+            @JsonProperty("devices") String[] devices
     ) {
         this.id = id;
         this.login = login;
         this.default_email = default_email;
         this.token = token;
+        this.devices = devices;
     }
 
 
@@ -32,6 +34,8 @@ public class UserYa implements User{
         this.login = "created";
         this.default_email = "created";
         this.token = "created";
+        this.devices = new String[5];
+
     }
 
     @Override
@@ -70,6 +74,16 @@ public class UserYa implements User{
     @Override
     public String getToken() {
         return token;
+    }
+
+    @Override
+    public String[] getDevices() {
+        return this.devices;
+    }
+
+    @Override
+    public void setDevices(String[] devices) {
+        this.devices = devices;
     }
 
 

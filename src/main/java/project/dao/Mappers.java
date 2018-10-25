@@ -57,6 +57,10 @@ public class Mappers {
         String login = res.getString("login");
         String email = res.getString("email");
         String token = res.getString("token");
-        return new UserYa(id, login, email, token);
+        Array devices = res.getArray("devices");
+        if (devices == null) {
+            System.out.println("123");
+        }
+        return new UserYa(id, login, email, token, (String[])devices.getArray());
     };
 }
