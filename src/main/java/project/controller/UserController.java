@@ -173,7 +173,7 @@ public class UserController {
     }
 
 
-    @RequestMapping(path = "/push/{id}/{key}", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(path = "/push/{id}", method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<?> pushNotification(@PathVariable("id") String pageUUID,  HttpSession httpSession) {
         System.out.println("push");
         DAOResponse<Page> daoResponse = pageDAO.getPageByID(pageUUID);
