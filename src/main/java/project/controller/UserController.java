@@ -174,9 +174,8 @@ public class UserController {
 
 
     @RequestMapping(path = "/push/{id}/{key}", method = RequestMethod.GET, produces = "application/json")
-    public ResponseEntity<?> pushNotification(@PathVariable("id") String pageUUID, @PathVariable("key") String key,  HttpSession httpSession) {
+    public ResponseEntity<?> pushNotification(@PathVariable("id") String pageUUID,  HttpSession httpSession) {
         System.out.println("push");
-        String myKey = key;
         DAOResponse<Page> daoResponse = pageDAO.getPageByID(pageUUID);
         if (daoResponse.status != HttpStatus.OK) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("No such page"));
@@ -189,8 +188,10 @@ public class UserController {
         for (int i = 0; i < userDevices.length; i++) {
             devices += "\"" + userDevices[i] + "\", ";
         }
-        devices = devices.substring(0, devices.length()-2);
-        System.out.println(devices);
+        if (userDevices.length > 0 ) {
+            devices = devices.substring(0, devices.length()-2);
+        }
+//        System.out.println(devices);
 
 //        String body = "{" +
 //                "\"notification\": {" +
@@ -207,7 +208,7 @@ public class UserController {
                 "\"notification\": {" +
                 "\"title\":" + title +
                 "\"body\":" + message +
-                "\"icon\": \"https://eralash.ru.rsz.io/sites/all/themes/eralash_v5/logo.png?width=40&height=40\"," +
+                "\"icon\": \"https://velox-app.herokuapp.com/icons/favicon.jpg\"," +
                 "\"click_action\": \"http://eralash.ru/\" }," +
                 "\"registration_ids\":" + "[" + devices + "]" +
                 "}";
@@ -217,7 +218,7 @@ public class UserController {
                 ContentType.APPLICATION_FORM_URLENCODED);
         HttpClient httpClient = HttpClientBuilder.create().build();
         HttpPost request = new HttpPost("https://fcm.googleapis.com/fcm/send");
-        request.setHeader("Authorization", myKey);
+        request.setHeader("Authorization", "key=" + System.getenv("NOTIFICATION_KEY"));
         request.setHeader("Content-Type", "application/json");
         request.setEntity(entity);
         try {
