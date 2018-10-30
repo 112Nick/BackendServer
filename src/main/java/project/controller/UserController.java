@@ -212,7 +212,7 @@ public class UserController {
                 "\"title\":" + title +
                 "\"body\":" + message +
                 "\"icon\": \"https://velox-app.herokuapp.com/icons/favicon.jpg\"," +
-                "\"click_action\": \"http://eralash.ru/\" }," +
+                "\"click_action\": \"https://velox-app.herokuapp.com/\" }," +
                 "\"registration_ids\":" + "[" + devices + "]" +
                 "}";
 
@@ -221,7 +221,9 @@ public class UserController {
                 ContentType.APPLICATION_FORM_URLENCODED);
         HttpClient httpClient = HttpClientBuilder.create().build();
         HttpPost request = new HttpPost("https://fcm.googleapis.com/fcm/send");
+//        System.out.println(System.getenv("NOTIFICATION_KEY"));
         request.setHeader("Authorization", "key=" + System.getenv("NOTIFICATION_KEY"));
+//        request.setHeader("Authorization", "key=" + NOTIFICATION_KEY);
         request.setHeader("Content-Type", "application/json");
         request.setEntity(entity);
         try {
@@ -231,14 +233,15 @@ public class UserController {
             Gson g = new Gson();
             System.out.println(firebaseBody);
             FireBaseBody frbody = g.fromJson(firebaseBody, FireBaseBody.class);
+            System.out.println(frbody.getSuccess());
+
             if (frbody.getSuccess() == "1") {
                 if (response.getStatusLine().getStatusCode() == 200) {
                     return ResponseEntity.status(HttpStatus.OK).body(new Message("Successfully notified"));
                 }
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Message("Oops, try again"));
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("User wasn't notified"));
-
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(new Message("User wasn't notified"));
             }
 
         } catch (Exception e) {
