@@ -4,10 +4,13 @@ package project.controller;
 import com.google.gson.Gson;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 import project.dao.PageDAO;
 import project.dao.UserDAO;
 import project.model.*;
@@ -224,10 +227,20 @@ public class UserController {
         try {
             HttpResponse response = httpClient.execute(request);
             System.out.println(response.getStatusLine().getStatusCode());
-            if (response.getStatusLine().getStatusCode() == 200) {
-                return ResponseEntity.status(HttpStatus.CREATED).body(new Message("Successfully notified"));
+            String firebaseBody =  EntityUtils.toString(response.getEntity());
+            Gson g = new Gson();
+            System.out.println(firebaseBody);
+            FireBaseBody frbody = g.fromJson(firebaseBody, FireBaseBody.class);
+            if (frbody.getSuccess() == "1") {
+                if (response.getStatusLine().getStatusCode() == 200) {
+                    return ResponseEntity.status(HttpStatus.OK).body(new Message("Successfully notified"));
+                }
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Message("Oops, try again"));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("User wasn't notified"));
+
             }
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Message("Oops, try again"));
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Message("Oops, something went wrong"));
