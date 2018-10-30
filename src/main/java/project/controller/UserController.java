@@ -235,7 +235,7 @@ public class UserController {
             FireBaseBody frbody = g.fromJson(firebaseBody, FireBaseBody.class);
             System.out.println(frbody.getSuccess());
 
-            if (frbody.getSuccess() == "1") {
+            if (Integer.valueOf(frbody.getSuccess()) > 0) {
                 if (response.getStatusLine().getStatusCode() == 200) {
                     return ResponseEntity.status(HttpStatus.OK).body(new Message("Successfully notified"));
                 }
