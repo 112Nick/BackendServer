@@ -38,6 +38,7 @@ public class UserController {
     public UserController(UserDAO userDAO, PageDAO pageDAO) {
         this.userDAO = userDAO;
         this.pageDAO = pageDAO;
+//        pageDAO.setViews();
     }
 
     @RequestMapping(path = "/", method = RequestMethod.GET, produces = "application/json")
@@ -66,6 +67,23 @@ public class UserController {
         }
         return ResponseEntity.status(HttpStatus.OK).body(new Message(user.getDefault_email()));
     }
+
+
+    @RequestMapping(path = "/stats", method = RequestMethod.GET, produces = "application/json")
+    public ResponseEntity<?> getStats(HttpSession httpSession) {
+        System.out.println("pages");
+
+        User user = (User) httpSession.getAttribute(SESSION_KEY);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Message("User isn't authorized"));
+        }
+        DAOResponse<Stats> daoResponse = pageDAO.getStats();
+        if (daoResponse.status == HttpStatus.NOT_FOUND) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("No pages found, check filters or create new one"));
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(daoResponse.body);
+    }
+
 
     @RequestMapping(path = "/login/yandex", method = RequestMethod.POST, produces = "application/json")
     public ResponseEntity<?> loginUserYandex(@RequestBody Token token, HttpSession httpSession) {

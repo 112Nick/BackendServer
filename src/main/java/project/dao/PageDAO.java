@@ -2,14 +2,12 @@ package project.dao;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Service;
-import project.model.Page;
-import project.model.DAOResponse;
-import project.model.PageContainer;
-import project.model.UserYa;
+import project.model.*;
 
 import java.sql.PreparedStatement;
 import java.util.ArrayList;
@@ -148,6 +146,38 @@ public class PageDAO {
     }
 
 
+    public DAOResponse<Stats> getStats() {
+        DAOResponse<Stats> result = new DAOResponse<>();
+        try {
+
+            Integer users = template.queryForObject(
+                    "SELECT COUNT(*) FROM \"user\";",
+                    new Object[]{}, Integer.class);
+
+            Integer pages = template.queryForObject(
+                    "SELECT COUNT(*) FROM page;",
+                    new Object[]{}, Integer.class);
+
+
+            Integer views = getViews();
+
+
+            result.body = new Stats();
+            result.body.setPages(pages);
+            result.body.setUsers(users);
+            result.body.setViews(views);
+            result.status = HttpStatus.OK;
+        }
+        catch (DataAccessException e) {
+            e.printStackTrace();
+            result.body = null;
+            result.status = HttpStatus.NOT_FOUND;
+        }
+        return result;
+
+    }
+
+
     public DAOResponse<Page> editPage(Page body, String pageUUID) {
         DAOResponse<Page> result = new DAOResponse<>();
         result.body = null;
@@ -177,6 +207,52 @@ public class PageDAO {
             result.status = HttpStatus.CONFLICT;
         }
         return result;
+    }
+
+    public void incrementViews() {
+        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+        try {
+            Integer views = getViews() + 1;
+            template.update(con -> {
+                PreparedStatement statement = con.prepareStatement(
+                        "UPDATE views SET " +
+                                " views = ? where id = 1",
+                        PreparedStatement.RETURN_GENERATED_KEYS);
+                statement.setInt(1 , views);
+                return statement;
+            }, keyHolder);
+        } catch(DuplicateKeyException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void setViews() {
+        GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
+        try {
+            template.update(con -> {
+                PreparedStatement statement = con.prepareStatement(
+                        "INSERT into views(views) VALUES(?) ",
+                        PreparedStatement.RETURN_GENERATED_KEYS);
+                statement.setInt(1 , 1);
+                return statement;
+            }, keyHolder);
+        } catch(DuplicateKeyException e){
+            e.printStackTrace();
+        }
+    }
+
+    public Integer getViews() {
+        Integer result = 0;
+        try {
+            result = template.queryForObject(
+                    "SELECT views FROM views where id = 1;",
+                    new Object[]{}, Integer.class);
+            return result;
+        } catch (EmptyResultDataAccessException e) {
+            e.printStackTrace();
+            setViews();
+            return 0;
+        }
     }
 
 
@@ -410,6 +486,8 @@ public class PageDAO {
                 "TRUNCATE page, userpages CASCADE;" //TODO only users when connected
         );
     }
+
+
     ///////////////////////////////
 
 }

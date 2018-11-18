@@ -109,6 +109,7 @@ public class PageController {
                         pageDAO.addViewedPage(user.getId().intValue(), pageUUID);
                     }
                     requestedPage.setOwnerID(0);
+                    pageDAO.incrementViews();
                     return ResponseEntity.status(HttpStatus.OK).body(requestedPage);
                 }
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Message("Requested page is private"));
@@ -124,6 +125,7 @@ public class PageController {
                         System.out.println("1");
                     }
                     requestedPage.setOwnerID(0);
+                    pageDAO.incrementViews();
                     return ResponseEntity.status(HttpStatus.OK).body(requestedPage);
                 }
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Message("Requested page is private"));
